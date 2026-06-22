@@ -10,14 +10,25 @@
         if (typeof gsap === "undefined") return;
 
         /* ---------- a) Page entrance ---------- */
-        gsap.set(".app-sidebar", { x: -24, opacity: 0 });
+        const isDesktop = !window.matchMedia("(max-width: 991.98px)").matches;
+
+        if (isDesktop) {
+            gsap.set(".app-sidebar", { x: -24, opacity: 0 });
+        } else {
+            gsap.set(".app-sidebar", { opacity: 1 });
+        }
         gsap.set(".app-topbar", { y: -16, opacity: 0 });
         gsap.set("[data-stagger-item]", { y: 22, opacity: 0 });
 
         const tl = gsap.timeline({ defaults: { ease: "power3.out", duration: 0.6 } });
-        tl.to(".app-sidebar", { x: 0, opacity: 1 })
-            .to(".app-topbar", { y: 0, opacity: 1, duration: 0.5 }, "-=0.35")
-            .to("[data-stagger-item]", { y: 0, opacity: 1, stagger: 0.07, duration: 0.5 }, "-=0.3");
+        if (isDesktop) {
+            tl.to(".app-sidebar", { x: 0, opacity: 1 })
+                .to(".app-topbar", { y: 0, opacity: 1, duration: 0.5 }, "-=0.35")
+                .to("[data-stagger-item]", { y: 0, opacity: 1, stagger: 0.07, duration: 0.5 }, "-=0.3");
+        } else {
+            tl.to(".app-topbar", { y: 0, opacity: 1, duration: 0.5 })
+                .to("[data-stagger-item]", { y: 0, opacity: 1, stagger: 0.07, duration: 0.5 }, "-=0.3");
+        }
 
         /* ---------- d) Ambient background blobs ---------- */
         if (document.querySelector(".blob-1")) {
