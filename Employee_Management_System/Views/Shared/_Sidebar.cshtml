@@ -1,0 +1,129 @@
+@inject Microsoft.AspNetCore.Authorization.IAuthorizationService AuthorizationService
+@using Employee_Management_System.Models
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+
+    bool IsActive(string controller) =>
+        string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase);
+}
+<aside class="app-sidebar">
+    <div class="sidebar-brand">
+        <div class="sidebar-brand-mark">N</div>
+        <div class="sidebar-brand-text">
+            <strong>NovaHR</strong>
+            <span>Employee Management</span>
+        </div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="sidebar-indicator"></div>
+
+        @if ((await AuthorizationService.AuthorizeAsync(User, null, Permissions.Dashboard.View)).Succeeded ||
+             (await AuthorizationService.AuthorizeAsync(User, null, Permissions.Dashboard.ViewEmployee)).Succeeded)
+        {
+            <div class="sidebar-section-label">Overview</div>
+            @if ((await AuthorizationService.AuthorizeAsync(User, null, Permissions.Dashboard.View)).Succeeded)
+            {
+                <a asp-controller="Dashboard" asp-action="Index" class="sidebar-link @(IsActive("Dashboard") ? "active" : "")">
+                    <i class="bi bi-grid-1x2-fill"></i>
+                    <span>Dashboard</span>
+                </a>
+            }
+            else
+            {
+                <a asp-controller="Dashboard" asp-action="EmployeeIndex" class="sidebar-link @(IsActive("Dashboard") ? "active" : "")">
+                    <i class="bi bi-grid-1x2-fill"></i>
+                    <span>My Dashboard</span>
+                </a>
+            }
+        }
+
+        @if ((await AuthorizationService.AuthorizeAsync(User, null, Permissions.Employees.View)).Succeeded || 
+             (await AuthorizationService.AuthorizeAsync(User, null, Permissions.Departments.View)).Succeeded || 
+             (await AuthorizationService.AuthorizeAsync(User, null, Permissions.Positions.View)).Succeeded)
+        {
+            <div class="sidebar-section-label">Workforce</div>
+            @if ((await AuthorizationService.AuthorizeAsync(User, null, Permissions.Employees.View)).Succeeded)
+            {
+                <a asp-controller="Employee" asp-action="Index" class="sidebar-link @(IsActive("Employee") ? "active" : "")">
+                    <i class="bi bi-people-fill"></i>
+                    <span>Employees</span>
+                </a>
+            }
+            @if ((await AuthorizationService.AuthorizeAsync(User, null, Permissions.Departments.View)).Succeeded)
+            {
+                <a asp-controller="Department" asp-action="Index" class="sidebar-link @(IsActive("Department") ? "active" : "")">
+                    <i class="bi bi-diagram-3-fill"></i>
+                    <span>Departments</span>
+                </a>
+            }
+            @if ((await AuthorizationService.AuthorizeAsync(User, null, Permissions.Positions.View)).Succeeded)
+            {
+                <a asp-controller="Position" asp-action="Index" class="sidebar-link @(IsActive("Position") ? "active" : "")">
+                    <i class="bi bi-briefcase-fill"></i>
+                    <span>Positions</span>
+                </a>
+            }
+        }
+
+        <div class="sidebar-section-label">Time & Leave</div>
+        <a asp-controller="Attendance" asp-action="EmployeeAttendance" class="sidebar-link @(IsActive("Attendance") ? "active" : "")">
+            <i class="bi bi-clock-history"></i>
+            <span>Attendance</span>
+        </a>
+        <a asp-controller="Vacation" asp-action="RequestForm" class="sidebar-link @(IsActive("Vacation") ? "active" : "")">
+            <i class="bi bi-airplane-fill"></i>
+            <span>Vacation Requests</span>
+        </a>
+
+        @if ((await AuthorizationService.AuthorizeAsync(User, null, Permissions.Vacations.Approve)).Succeeded)
+        {
+            <a asp-controller="VacationApproval" asp-action="Index" class="sidebar-link @(IsActive("VacationApproval") ? "active" : "")">
+                <i class="bi bi-patch-check-fill"></i>
+                <span>Approvals</span>
+            </a>
+        }
+
+        <div class="sidebar-section-label">Account</div>
+        @if ((await AuthorizationService.AuthorizeAsync(User, null, Permissions.UserManagement.View)).Succeeded)
+        {
+            <a asp-controller="UserManagement" asp-action="Index" class="sidebar-link @(IsActive("UserManagement") ? "active" : "")">
+                <i class="bi bi-shield-lock-fill"></i>
+                <span>User Management</span>
+            </a>
+        }
+        @if ((await AuthorizationService.AuthorizeAsync(User, null, Permissions.RoleManagement.View)).Succeeded)
+        {
+            <a asp-controller="RoleManagement" asp-action="Index" class="sidebar-link @(IsActive("RoleManagement") ? "active" : "")">
+                <i class="bi bi-key-fill"></i>
+                <span>Role Management</span>
+            </a>
+        }
+        <form asp-controller="Auth" asp-action="Logout" method="post" class="w-100 m-0 p-0">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="sidebar-link w-100 text-start border-0 bg-transparent">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Logout</span>
+            </button>
+        </form>
+    </nav>
+
+    <div class="sidebar-footer">
+        <a class="sidebar-user text-decoration-none" href="#">
+            <div class="sidebar-avatar">
+                @{
+                    var initials = "U";
+                    if (User?.Identity?.Name != null && User.Identity.Name.Length > 0)
+                    {
+                        initials = User.Identity.Name.Substring(0, 1).ToUpper();
+                    }
+                }
+                @initials
+            </div>
+            <div class="sidebar-user-info">
+                    <strong>@(User?.Identity?.Name ?? "Guest User")</strong>
+                <span>View profile</span>
+            </div>
+        </a>
+    </div>
+</aside>

@@ -1,0 +1,24 @@
+@{
+    ViewData["Title"] = "Account Locked";
+    Layout = "_AuthLayout";
+}
+
+<div class="icon-circle mb-4" style="background:var(--danger-bg); color:var(--danger); width:64px; height:64px; font-size:26px;">
+    <i class="bi bi-lock-fill"></i>
+</div>
+
+<span class="page-eyebrow" style="color:var(--danger);">Account Locked</span>
+<h1 class="mb-2" style="font-size:26px;">Too many failed attempts</h1>
+<p class="page-subtitle mb-4">
+    Your account has been temporarily locked for security reasons after multiple failed sign-in attempts.
+    Please try again in a few minutes, or reset your password below.
+</p>
+
+<div class="d-flex flex-column gap-2">
+    <a asp-controller="Auth" asp-action="ForgotPassword" class="btn btn-primary btn-lift w-100">
+        <i class="bi bi-key"></i> Reset Password
+    </a>
+    <a asp-controller="Auth" asp-action="Login" class="btn btn-outline-primary btn-lift w-100">
+        <i class="bi bi-arrow-left"></i> Back to Sign In
+    </a>
+</div>

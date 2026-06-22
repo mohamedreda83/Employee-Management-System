@@ -1,0 +1,175 @@
+@model VacationRequestViewModel
+@{
+    ViewData["Title"] = "Vacation Requests";
+}
+
+<div class="page-header" data-stagger-item>
+    <div>
+        <span class="page-eyebrow">Workforce</span>
+        <h1>Vacation Requests</h1>
+        <p class="page-subtitle">Track your leave balance and submit new vacation requests.</p>
+    </div>
+    <a asp-controller="VacationApproval" asp-action="Index" class="btn btn-outline-primary btn-lift">
+        <i class="bi bi-patch-check"></i> Approvals
+    </a>
+</div>
+
+<!-- Balance cards -->
+<div class="row g-4 mb-4">
+    @if (!Model.BalanceCards.Any())
+    {
+        <div class="col-12">
+            <div class="app-card" data-stagger-item>
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="bi bi-wallet2"></i></div>
+                    <h6>No vacation balances configured</h6>
+                    <p>Your leave balances will appear here once set up by HR.</p>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        @foreach (var bal in Model.BalanceCards)
+        {
+            var pct = bal.EntitledDays > 0 ? (int)Math.Round((double)bal.UsedDays / bal.EntitledDays * 100) : 0;
+            <div class="col-xl-3 col-md-6">
+                <div class="card-3d-wrap h-100">
+                    <div class="card-3d glass-solid h-100" data-tilt data-stagger-item>
+                        <div class="card-3d-shine"></div>
+                        <div class="card-3d-content app-card-body">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <span style="font-size:13px; font-weight:600; color:var(--text-primary);">@bal.VacationType</span>
+                                <div class="icon-circle" style="width:34px;height:34px; background:var(--info-bg); color:var(--secondary); font-size:14px;">
+                                    <i class="bi bi-airplane-fill"></i>
+                                </div>
+                            </div>
+                            <div class="stat-value mb-1" style="font-size:26px;">@bal.RemainingDays <span style="font-size:13px; color:var(--text-tertiary); font-weight:500;">/ @bal.EntitledDays days</span></div>
+                            <div class="app-progress mb-1">
+                                <div class="bar" style="width:@(pct)%;"></div>
+                            </div>
+                            <span style="font-size:11.5px; color:var(--text-tertiary);">@bal.UsedDays days used</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<div class="row g-4">
+    <!-- New request form -->
+    <div class="col-lg-5">
+        <div class="app-card" data-stagger-item>
+            <div class="app-card-header"><h3>New Vacation Request</h3></div>
+            <div class="app-card-body">
+                <form asp-controller="Vacation" asp-action="SubmitRequest" method="post" novalidate>
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="NewRequest.EmployeeId" />
+
+                    <div class="mb-3">
+                        <label asp-for="NewRequest.VacationTypeId" class="form-label">Vacation Type <span class="required-dot">*</span></label>
+                        <select asp-for="NewRequest.VacationTypeId" class="form-select">
+                            <option value="">Select type</option>
+                            @foreach (var vt in Model.VacationTypes)
+                            {
+                                <option value="@vt.Id">@vt.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="NewRequest.VacationTypeId" class="invalid-feedback d-block"></span>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label asp-for="NewRequest.StartDate" class="form-label">Start Date <span class="required-dot">*</span></label>
+                            <input asp-for="NewRequest.StartDate" type="date" class="form-control" />
+                            <span asp-validation-for="NewRequest.StartDate" class="invalid-feedback d-block"></span>
+                        </div>
+                        <div class="col-6">
+                            <label asp-for="NewRequest.EndDate" class="form-label">End Date <span class="required-dot">*</span></label>
+                            <input asp-for="NewRequest.EndDate" type="date" class="form-control" />
+                            <span asp-validation-for="NewRequest.EndDate" class="invalid-feedback d-block"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="NewRequest.DaysRequested" class="form-label">Days Requested <span class="required-dot">*</span></label>
+                        <input asp-for="NewRequest.DaysRequested" type="number" min="1" class="form-control" placeholder="Number of days" />
+                        <span asp-validation-for="NewRequest.DaysRequested" class="invalid-feedback d-block"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="NewRequest.Reason" class="form-label">Reason</label>
+                        <textarea asp-for="NewRequest.Reason" class="form-control" rows="3" placeholder="Briefly describe your reason for leave..."></textarea>
+                        <span asp-validation-for="NewRequest.Reason" class="invalid-feedback d-block"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lift w-100">
+                        <i class="bi bi-send"></i> Submit Request
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Request history -->
+    <div class="col-lg-7">
+        <div class="app-card h-100" data-stagger-item>
+            <div class="app-card-header">
+                <h3>My Requests</h3>
+                <span class="pill pill-info">@Model.Requests.Count() total</span>
+            </div>
+            @if (!Model.Requests.Any())
+            {
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="bi bi-airplane"></i></div>
+                    <h6>No vacation requests yet</h6>
+                    <p>Submit your first vacation request using the form to get started.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-wrap">
+                    <table class="app-table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Dates</th>
+                                <th>Days</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var req in Model.Requests)
+                            {
+                                var pillClass = req.Status switch
+                                {
+                                    "Approved" => "pill-success",
+                                    "Pending" => "pill-warning",
+                                    "Rejected" => "pill-danger",
+                                    _ => "pill-neutral"
+                                };
+                                <tr class="list-row-interactive">
+                                    <td>
+                                        <strong style="font-size:13px;">@req.VacationType</strong>
+                                        @if (!string.IsNullOrEmpty(req.Reason))
+                                        {
+                                            <div style="font-size:12px; color:var(--text-tertiary);">@req.Reason</div>
+                                        }
+                                    </td>
+                                    <td style="font-size:12.5px;">@req.StartDate.ToString("MMM d") – @req.EndDate.ToString("MMM d, yyyy")</td>
+                                    <td>@req.DaysRequested</td>
+                                    <td><span class="pill @pillClass pill-glow">@(req.Status ?? "—")</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

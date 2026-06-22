@@ -1,0 +1,163 @@
+@model Employee_Management_System.ViewModels.Dashboard.EmployeeDashboardViewModel
+@{
+    ViewData["Title"] = "My Dashboard";
+}
+
+<div class="page-header">
+    <div>
+        <span class="page-eyebrow">Overview</span>
+        <h1>My Dashboard</h1>
+        <p class="page-subtitle">Your attendance summary for the current month.</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card" data-tilt>
+            <div class="stat-icon bg-success bg-opacity-10 text-success">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <div class="stat-value" data-count-to="@Model.PresentDays">0</div>
+            <div class="stat-label">Days Present</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card" data-tilt>
+            <div class="stat-icon bg-danger bg-opacity-10 text-danger">
+                <i class="bi bi-x-circle-fill"></i>
+            </div>
+            <div class="stat-value" data-count-to="@Model.AbsentDays">0</div>
+            <div class="stat-label">Days Absent</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card" data-tilt>
+            <div class="stat-icon bg-info bg-opacity-10 text-info">
+                <i class="bi bi-umbrella-fill"></i>
+            </div>
+            <div class="stat-value" data-count-to="@Model.LeaveDays">0</div>
+            <div class="stat-label">Days on Leave</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-8 offset-md-2">
+        <div class="app-card">
+            <div class="app-card-header">
+                <h3>Attendance Breakdown</h3>
+                <span class="pill pill-info">@Model.TotalExpectedDays days expected this month</span>
+            </div>
+            <div class="app-card-body" style="height: 350px;">
+                @if (Model.PresentDays == 0 && Model.AbsentDays == 0 && Model.LeaveDays == 0)
+                {
+                    <div class="d-flex h-100 align-items-center justify-content-center text-muted">
+                        <p class="mb-0">No attendance data recorded yet this month.</p>
+                    </div>
+                }
+                else
+                {
+                    <canvas id="attendanceChart"></canvas>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-2">
+    <div class="col-md-8 offset-md-2">
+        <div class="app-card">
+            <div class="app-card-header">
+                <h3>Leave & Holiday Details</h3>
+            </div>
+            <div class="app-card-body">
+                @if (!Model.VacationDetails.Any())
+                {
+                    <div class="empty-state py-4">
+                        <div class="empty-icon"><i class="bi bi-calendar-event"></i></div>
+                        <h6>No approved leave records</h6>
+                        <p>You have no approved vacation or leave records for the current month.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-borderless align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Period</th>
+                                    <th>Days</th>
+                                    <th>Status</th>
+                                    <th>Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var vacation in Model.VacationDetails)
+                                {
+                                    <tr>
+                                        <td>@vacation.VacationType</td>
+                                        <td>@vacation.StartDate.ToString("MMM d") - @vacation.EndDate.ToString("MMM d")</td>
+                                        <td>@vacation.Days</td>
+                                        <td>@vacation.Status</td>
+                                        <td>@vacation.Reason</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @if (Model.PresentDays > 0 || Model.AbsentDays > 0 || Model.LeaveDays > 0)
+    {
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                var ctx = document.getElementById('attendanceChart').getContext('2d');
+                var attendanceChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Present', 'Absent', 'On Leave'],
+                        datasets: [{
+                            data: [@Model.PresentDays, @Model.AbsentDays, @Model.LeaveDays],
+                            backgroundColor: [
+                                'rgba(25, 135, 84, 0.8)',  // Success
+                                'rgba(220, 53, 69, 0.8)',  // Danger
+                                'rgba(13, 202, 240, 0.8)'  // Info
+                            ],
+                            borderColor: [
+                                '#ffffff',
+                                '#ffffff',
+                                '#ffffff'
+                            ],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true
+                                }
+                            }
+                        },
+                        cutout: '65%',
+                        animation: {
+                            animateScale: true,
+                            animateRotate: true
+                        }
+                    }
+                });
+            });
+        </script>
+    }
+}

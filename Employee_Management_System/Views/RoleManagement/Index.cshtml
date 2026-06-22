@@ -1,0 +1,79 @@
+@model Employee_Management_System.ViewModels.RoleManagement.RoleListViewModel
+@{
+    ViewData["Title"] = "Role Management";
+}
+
+<div class="page-header" data-stagger-item>
+    <div>
+        <span class="page-eyebrow">Administration</span>
+        <h1>Role Management</h1>
+        <p class="page-subtitle">Configure system roles and dynamic permissions.</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary btn-lift">
+        <i class="bi bi-plus-lg"></i> Create Role
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert-toast alert-toast-success" data-stagger-item>
+        <i class="bi bi-check-circle-fill"></i> @TempData["Success"]
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert-toast alert-toast-danger" data-stagger-item>
+        <i class="bi bi-exclamation-circle-fill"></i> @TempData["Error"]
+    </div>
+}
+
+<div class="app-card" data-stagger-item>
+    <div class="table-wrap">
+        <table class="app-table">
+            <thead>
+                <tr>
+                    <th>Role Name</th>
+                    <th>Assigned Users</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var role in Model.Roles)
+                {
+                    <tr class="list-row-interactive">
+                        <td>
+                            <strong>@role.Name</strong>
+                            @if (role.Name == "Admin")
+                            {
+                                <span class="pill pill-danger ms-2">System Built-In</span>
+                            }
+                        </td>
+                        <td>
+                            <span class="pill pill-neutral"><i class="bi bi-people-fill me-1"></i> @role.UsersCount Users</span>
+                        </td>
+                        <td class="text-end">
+                            <a asp-action="Edit" asp-route-id="@role.Id" class="btn btn-sm btn-outline-secondary btn-lift">
+                                <i class="bi bi-shield-lock-fill"></i> Edit Permissions
+                            </a>
+                            @if (role.Name != "Admin")
+                            {
+                                <form asp-action="Delete" asp-route-id="@role.Id" method="post" class="d-inline"
+                                      onsubmit="return confirm('Are you sure you want to delete the @role.Name role?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger ms-1 btn-lift">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+.alert-toast { display:flex; align-items:center; gap:10px; padding:12px 18px; border-radius:12px; font-size:14px; font-weight:500; margin-bottom:20px; }
+.alert-toast-success { background:var(--success-bg); color:var(--success); border:1px solid color-mix(in srgb,var(--success) 25%,transparent); }
+.alert-toast-danger  { background:var(--danger-bg);  color:var(--danger);  border:1px solid color-mix(in srgb,var(--danger)  25%,transparent); }
+</style>

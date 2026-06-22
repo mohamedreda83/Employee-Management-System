@@ -1,0 +1,73 @@
+@*
+    Reusable KPI stat card.
+    Expects a StatCardViewModel-shaped dynamic/ExpandoObject or anonymous object with:
+    Label, Value, Icon, IconVariant ("blue"|"green"|"orange"|"red"), Primary (bool), Trend (string, optional), TrendUp (bool, optional)
+*@
+@model object
+
+@functions {
+    private static T? GetPropertyValue<T>(object? model, string name)
+    {
+        if (model == null)
+        {
+            return default;
+        }
+
+        var prop = model.GetType().GetProperty(name);
+        if (prop == null)
+        {
+            return default;
+        }
+
+        var value = prop.GetValue(model);
+        if (value is T typedValue)
+        {
+            return typedValue;
+        }
+
+        if (value == null)
+        {
+            return default;
+        }
+
+        try
+        {
+            return (T)Convert.ChangeType(value, typeof(T));
+        }
+        catch
+        {
+            return default;
+        }
+    }
+}
+
+@{
+    bool isPrimary = GetPropertyValue<bool>(Model, "Primary");
+    string iconVariant = GetPropertyValue<string>(Model, "IconVariant") ?? "blue";
+    string icon = GetPropertyValue<string>(Model, "Icon") ?? string.Empty;
+    var value = GetPropertyValue<object>(Model, "Value") ?? 0;
+    string valueText = value.ToString() ?? "0";
+    string label = GetPropertyValue<string>(Model, "Label") ?? string.Empty;
+    string? trend = GetPropertyValue<string>(Model, "Trend");
+    bool trendUp = GetPropertyValue<bool>(Model, "TrendUp");
+}
+
+<div class="card-3d-wrap h-100">
+    <div class="card-3d stat-card h-100 @(isPrimary ? "stat-card--primary" : "")" data-tilt data-stagger-item>
+        <div class="card-3d-shine"></div>
+        <div class="card-3d-content">
+            <div class="stat-icon @(isPrimary ? "" : "stat-icon--" + iconVariant)">
+                <i class="bi @icon"></i>
+            </div>
+            <div class="stat-value" data-count-to="@valueText">@valueText</div>
+            <div class="stat-label">@label</div>
+            @if (!string.IsNullOrEmpty(trend))
+            {
+                <div class="stat-trend @(trendUp ? "up" : "down")">
+                    <i class="bi @(trendUp ? "bi-arrow-up-right" : "bi-arrow-down-right")"></i>
+                    <span>@trend</span>
+                </div>
+            }
+        </div>
+    </div>
+</div>

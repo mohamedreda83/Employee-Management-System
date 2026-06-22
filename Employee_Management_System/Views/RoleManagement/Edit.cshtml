@@ -1,0 +1,23 @@
+@model Employee_Management_System.ViewModels.RoleManagement.RoleFormViewModel
+@{
+    ViewData["Title"] = "Edit Role";
+}
+
+<div class="page-header" data-stagger-item>
+    <div>
+        <span class="page-eyebrow">Administration › Role Management</span>
+        <h1>Edit Role</h1>
+        <p class="page-subtitle">Configure system access and permissions for <strong>@Model.Name</strong>.</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary btn-lift">
+        <i class="bi bi-arrow-left"></i> Back
+    </a>
+</div>
+
+<div data-stagger-item>
+    <partial name="_RoleForm" model="Model" />
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

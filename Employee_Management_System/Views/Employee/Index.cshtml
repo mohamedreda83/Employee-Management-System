@@ -1,0 +1,155 @@
+@model EmployeeListViewModel
+@{
+    ViewData["Title"] = "Employees";
+}
+
+<div class="page-header" data-stagger-item>
+    <div>
+        <span class="page-eyebrow">Workforce</span>
+        <h1>Employees</h1>
+        <p class="page-subtitle">@Model.Employees.Count() employee@(Model.Employees.Count() == 1 ? "" : "s") found across your organization.</p>
+    </div>
+    <a asp-controller="Employee" asp-action="Create" class="btn btn-primary btn-lift">
+        <i class="bi bi-person-plus"></i> Add Employee
+    </a>
+</div>
+
+<!-- Filter toolbar -->
+<form asp-controller="Employee" asp-action="Index" method="get" class="filter-toolbar" data-stagger-item>
+    <div class="row g-2 align-items-center">
+        <div class="col-lg-4 col-md-6">
+            <div class="input-icon-group">
+                <i class="bi bi-search"></i>
+                <input type="text" name="search" value="@Model.Search" class="form-control" placeholder="Search by name, ID, or email..." data-debounce-search />
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-6 col-6">
+            <select name="departmentId" class="form-select" data-auto-submit>
+                <option value="">All Departments</option>
+                @foreach (var dept in Model.Departments)
+                {
+                    <option value="@dept.Id" selected="@(Model.DepartmentId == dept.Id ? "selected" : null)">@dept.Name</option>
+                }
+            </select>
+        </div>
+        <div class="col-lg-2 col-md-6 col-6">
+            <select name="positionId" class="form-select" data-auto-submit>
+                <option value="">All Positions</option>
+                @foreach (var pos in Model.Positions)
+                {
+                    <option value="@pos.Id" selected="@(Model.PositionId == pos.Id ? "selected" : null)">@pos.Name</option>
+                }
+            </select>
+        </div>
+        <div class="col-lg-2 col-md-6 col-6">
+            <select name="status" class="form-select" data-auto-submit>
+                <option value="">All Statuses</option>
+                @foreach (var st in Model.Statuses)
+                {
+                    <option value="@st" selected="@(Model.Status == st ? "selected" : null)">@st</option>
+                }
+            </select>
+        </div>
+        <div class="col-lg-2 col-md-6 col-6 d-flex justify-content-end align-items-center gap-2">
+            <div class="view-toggle" data-view-toggle>
+                <button type="button" data-view="grid" class="active" aria-label="Grid view"><i class="bi bi-grid-3x3-gap-fill"></i></button>
+                <button type="button" data-view="list" aria-label="List view"><i class="bi bi-list-ul"></i></button>
+            </div>
+        </div>
+    </div>
+</form>
+
+@if (!Model.Employees.Any())
+{
+    <div class="app-card" data-stagger-item>
+        <div class="empty-state">
+            <div class="empty-icon"><i class="bi bi-people"></i></div>
+            <h6>No employees found</h6>
+            <p>Try adjusting your filters, or add a new employee to get started.</p>
+            <a asp-controller="Employee" asp-action="Create" class="btn btn-primary btn-lift btn-sm">
+                <i class="bi bi-person-plus"></i> Add Employee
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <!-- Grid view -->
+    <div class="row g-4" data-view-grid>
+        @foreach (var emp in Model.Employees)
+        {
+            <div class="col-xl-3 col-lg-4 col-md-6">
+                @await Html.PartialAsync("_EmployeeCard", emp)
+            </div>
+        }
+    </div>
+
+    <!-- List/table view -->
+    <div class="app-card d-none" data-view-list data-stagger-item>
+        <div class="table-wrap">
+            <table class="app-table">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Department</th>
+                        <th>Position</th>
+                        <th>Status</th>
+                        <th>Contact</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var emp in Model.Employees)
+                    {
+                        var pillClass = emp.EmploymentStatus switch
+                        {
+                            "Active" => "pill-success",
+                            "On Leave" => "pill-warning",
+                            "Inactive" => "pill-danger",
+                            _ => "pill-neutral"
+                        };
+                        var initials = string.Join("", emp.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => p[0])).ToUpper();
+                        <tr class="list-row-interactive">
+                            <td>
+                                <div class="table-person">
+                                    @if (!string.IsNullOrEmpty(emp.ProfilePhoto))
+                                    {
+                                        <img src="@emp.ProfilePhoto" alt="@emp.FullName" style="width:38px;height:38px;border-radius:50%;object-fit:cover;" />
+                                    }
+                                    else
+                                    {
+                                        <div class="table-avatar">@initials</div>
+                                    }
+                                    <div>
+                                        <strong>@emp.FullName</strong>
+                                        <span>#@emp.EmployeeNumber</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>@emp.Department</td>
+                            <td>@emp.Position</td>
+                            <td><span class="pill @pillClass pill-glow">@emp.EmploymentStatus</span></td>
+                            <td>
+                                <div style="font-size:12.5px;">
+                                    @if (!string.IsNullOrEmpty(emp.Email)) { <div>@emp.Email</div> }
+                                    @if (!string.IsNullOrEmpty(emp.Phone)) { <div style="color:var(--text-tertiary);">@emp.Phone</div> }
+                                </div>
+                            </td>
+                            <td class="text-end">
+                                <div class="dropdown">
+                                    <button class="action-menu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><a class="dropdown-item" asp-controller="Employee" asp-action="Details" asp-route-id="@emp.Id"><i class="bi bi-eye"></i> View Details</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Employee" asp-action="Edit" asp-route-id="@emp.Id"><i class="bi bi-pencil"></i> Edit</a></li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

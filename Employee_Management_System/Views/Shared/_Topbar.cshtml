@@ -1,0 +1,52 @@
+<header class="app-topbar">
+    <button class="topbar-toggle" type="button" data-sidebar-toggle aria-label="Toggle navigation">
+        <i class="bi bi-list" style="font-size:20px;"></i>
+    </button>
+
+    <div class="topbar-search d-none d-md-block">
+        <i class="bi bi-search"></i>
+        <input type="search" placeholder="Search employees, requests..." aria-label="Search" />
+    </div>
+
+    <div class="topbar-actions">
+        <button class="topbar-icon-btn" type="button" data-bs-toggle="tooltip" title="Notifications">
+            <i class="bi bi-bell"></i>
+            <span class="dot"></span>
+        </button>
+        <button class="topbar-icon-btn d-none d-sm-flex" type="button" data-bs-toggle="tooltip" title="Help &amp; Support">
+            <i class="bi bi-question-circle"></i>
+        </button>
+
+        <div class="topbar-divider d-none d-sm-block"></div>
+
+        <div class="dropdown">
+            <button class="topbar-profile" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <div class="avatar">
+                    @{
+                        var topbarInitials = "U";
+                        if (User?.Identity?.Name != null && User.Identity.Name.Length > 0)
+                        {
+                            topbarInitials = User.Identity.Name.Substring(0, 1).ToUpper();
+                        }
+                    }
+                    @topbarInitials
+                </div>
+                <span class="d-none d-sm-inline">@(User?.Identity?.Name ?? "Guest")</span>
+                <i class="bi bi-chevron-down"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="#"><i class="bi bi-person"></i> My Profile</a></li>
+                <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Settings</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <form asp-controller="Auth" asp-action="Logout" method="post" class="m-0">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="dropdown-item text-danger border-0 bg-transparent w-100 text-start">
+                            <i class="bi bi-box-arrow-right"></i> Sign Out
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</header>

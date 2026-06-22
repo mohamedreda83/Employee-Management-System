@@ -1,0 +1,159 @@
+@model EditUserViewModel
+@using Employee_Management_System.ViewModels.UserManagement
+@{
+    ViewData["Title"] = "Edit Access";
+}
+
+<div class="page-header" data-stagger-item>
+    <div>
+        <span class="page-eyebrow">Administration › User Management</span>
+        <h1>Edit Access</h1>
+        <p class="page-subtitle">Manage roles and lock-out status for <strong>@Model.EmployeeName</strong>.</p>
+    </div>
+    <a asp-controller="UserManagement" asp-action="Index" class="btn btn-outline-secondary btn-lift">
+        <i class="bi bi-arrow-left"></i> Back
+    </a>
+</div>
+
+<div class="row justify-content-center" data-stagger-item>
+    <div class="col-lg-6">
+
+        <!-- Info banner -->
+        <div class="app-card mb-4" style="border-left:4px solid var(--warning);">
+            <div class="app-card-body d-flex align-items-center gap-3">
+                <div class="icon-circle" style="background:var(--warning-bg);color:var(--warning);flex-shrink:0;">
+                    <i class="bi bi-person-badge-fill"></i>
+                </div>
+                <div>
+                    <strong style="font-size:15px;">@Model.EmployeeName</strong>
+                    <div style="font-size:12.5px;color:var(--text-tertiary);">#@Model.EmployeeNumber &nbsp;·&nbsp; @Model.Email</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="app-card">
+            <div class="app-card-header">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="icon-circle" style="background:var(--warning-bg);color:var(--warning);">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </div>
+                    <h3 class="mb-0">Roles & Access</h3>
+                </div>
+            </div>
+            <div class="app-card-body">
+                <form asp-controller="UserManagement" asp-action="Edit" method="post" novalidate>
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="UserId" />
+                    <input type="hidden" asp-for="Email" />
+                    <input type="hidden" asp-for="EmployeeName" />
+                    <input type="hidden" asp-for="EmployeeNumber" />
+
+                    <!-- Roles -->
+                    <div class="mb-4">
+                        <label class="form-label">Assigned Roles</label>
+                        <div class="d-flex flex-wrap gap-3 pt-1">
+                            @foreach (var role in Model.AvailableRoles)
+                            {
+                                var roleIcon = role switch { "Admin" => "bi-shield-fill-exclamation", "HR" => "bi-person-badge-fill", _ => "bi-person-fill" };
+                                var roleColor = role switch { "Admin" => "var(--danger)", "HR" => "var(--warning)", _ => "var(--secondary)" };
+                                <label class="role-check-label" style="--rc:@roleColor">
+                                    <input type="checkbox" name="SelectedRoles" value="@role"
+                                           @(Model.SelectedRoles.Contains(role) ? "checked" : "") />
+                                    <span class="role-check-box">
+                                        <i class="bi @roleIcon"></i>
+                                        @role
+                                    </span>
+                                </label>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Lockout toggle -->
+                    <div class="mb-4">
+                        <label class="form-label">Account Status</label>
+                        <div class="lockout-toggle-wrap">
+                            <label class="lockout-toggle">
+                                <input type="checkbox" asp-for="IsLockedOut" id="lockoutToggle" />
+                                <span class="lockout-slider"></span>
+                            </label>
+                            <div>
+                                <span id="lockoutLabel" style="font-weight:600; font-size:13.5px;">
+                                    @(Model.IsLockedOut ? "Locked Out" : "Active")
+                                </span>
+                                <div style="font-size:12px; color:var(--text-tertiary);">
+                                    Toggle to lock or unlock this account
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-lift flex-grow-1">
+                            <i class="bi bi-floppy me-1"></i> Save Changes
+                        </button>
+                        <a asp-controller="UserManagement" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Quick links -->
+        <div class="app-card mt-4">
+            <div class="app-card-body">
+                <p class="mb-2" style="font-size:13px; color:var(--text-tertiary); font-weight:600; text-transform:uppercase; letter-spacing:.05em;">Quick Actions</p>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a asp-controller="UserManagement" asp-action="ResetPassword" asp-route-userId="@Model.UserId"
+                       class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-key-fill me-1"></i> Reset Password
+                    </a>
+                    <form asp-controller="UserManagement" asp-action="Delete" asp-route-userId="@Model.UserId"
+                          method="post"
+                          onsubmit="return confirm('Remove account for @Model.EmployeeName? The employee record will be kept.')">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash3 me-1"></i> Remove Account
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const toggle = document.getElementById('lockoutToggle');
+        const label  = document.getElementById('lockoutLabel');
+        toggle.addEventListener('change', () => {
+            label.textContent = toggle.checked ? 'Locked Out' : 'Active';
+        });
+    </script>
+}
+
+<style>
+.role-check-label { cursor:pointer; }
+.role-check-label input[type=checkbox] { display:none; }
+.role-check-box {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:8px 16px; border-radius:10px; font-size:13px; font-weight:600;
+    border:2px solid var(--border); color:var(--text-secondary); transition:all 0.18s; user-select:none;
+}
+.role-check-label input:checked + .role-check-box {
+    background:color-mix(in srgb, var(--rc) 12%, transparent);
+    border-color:var(--rc); color:var(--rc);
+}
+.lockout-toggle-wrap { display:flex; align-items:center; gap:14px; }
+.lockout-toggle { position:relative; display:inline-block; width:44px; height:24px; cursor:pointer; }
+.lockout-toggle input { opacity:0; width:0; height:0; }
+.lockout-slider {
+    position:absolute; inset:0; border-radius:24px;
+    background:var(--border); transition:.25s;
+}
+.lockout-slider::before {
+    content:''; position:absolute; width:18px; height:18px;
+    left:3px; top:3px; border-radius:50%;
+    background:#fff; transition:.25s;
+}
+.lockout-toggle input:checked + .lockout-slider { background:var(--danger); }
+.lockout-toggle input:checked + .lockout-slider::before { transform:translateX(20px); }
+</style>

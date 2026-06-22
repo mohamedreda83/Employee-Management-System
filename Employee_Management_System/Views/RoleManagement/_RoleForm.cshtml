@@ -1,0 +1,97 @@
+@model Employee_Management_System.ViewModels.RoleManagement.RoleFormViewModel
+@{
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+    var isEdit = action == "Edit";
+}
+
+<form asp-action="@action" method="post" novalidate>
+    @Html.AntiForgeryToken()
+    @if (isEdit) { <input type="hidden" asp-for="Id" /> }
+    
+    <div class="row g-4 mb-4">
+        <div class="col-lg-5">
+            <div class="app-card h-100">
+                <div class="app-card-body">
+                    <h5 class="mb-3">Role Details</h5>
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label"></label>
+                        <input asp-for="Name" class="form-control" placeholder="e.g. Finance Manager" readonly="@(Model.Name == "Admin")" />
+                        <span asp-validation-for="Name" class="invalid-feedback d-block"></span>
+                    </div>
+                    @if (Model.Name == "Admin")
+                    {
+                        <div class="alert alert-warning" style="font-size:13px; padding:10px 14px;">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i> The 'Admin' role name is fixed.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-7">
+            <div class="app-card h-100">
+                <div class="app-card-body">
+                    <h5 class="mb-3">Select Permissions</h5>
+                    
+                    <div class="accordion" id="permissionsAccordion">
+                        @{ int i = 0; }
+                        @foreach (var group in Model.AvailablePermissions)
+                        {
+                            var collapseId = $"collapse_{i}";
+                            var headingId = $"heading_{i}";
+                            var isGroupSelected = group.Value.Any(p => Model.SelectedPermissions.Contains(p));
+                            
+                            <div class="accordion-item" style="border-radius:12px; margin-bottom:8px; overflow:hidden; border:1px solid var(--border);">
+                                <h2 class="accordion-header" id="@headingId">
+                                    <button class="accordion-button @(i == 0 ? "" : "collapsed")" type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId" style="background:var(--card-bg); font-weight:600; font-size:14px; box-shadow:none;">
+                                        @if (isGroupSelected) { <i class="bi bi-check-circle-fill text-success me-2"></i> }
+                                        else { <i class="bi bi-circle text-muted me-2"></i> }
+                                        @group.Key
+                                    </button>
+                                </h2>
+                                <div id="@collapseId" class="accordion-collapse collapse @(i == 0 ? "show" : "")" data-bs-parent="#permissionsAccordion">
+                                    <div class="accordion-body border-top" style="background:color-mix(in srgb, var(--bg-color) 40%, transparent);">
+                                        <div class="d-flex flex-wrap gap-2">
+                                            @foreach (var perm in group.Value)
+                                            {
+                                                var isChecked = Model.SelectedPermissions.Contains(perm);
+                                                <label class="perm-check-label">
+                                                    <input type="checkbox" name="SelectedPermissions" value="@perm" @(isChecked ? "checked" : "") />
+                                                    <span class="perm-check-box">
+                                                        @perm.Replace($"{group.Key}.", "")
+                                                    </span>
+                                                </label>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            i++;
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary btn-lift">
+            <i class="bi bi-floppy me-1"></i> Save Role
+        </button>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-lift">Cancel</a>
+    </div>
+</form>
+
+<style>
+.perm-check-label { cursor:pointer; }
+.perm-check-label input[type=checkbox] { display:none; }
+.perm-check-box {
+    display:inline-block; padding:6px 12px; border-radius:8px; font-size:13px; font-weight:600;
+    border:2px solid var(--border); color:var(--text-secondary); transition:all 0.15s; user-select:none;
+}
+.perm-check-label input:checked + .perm-check-box {
+    background:color-mix(in srgb, var(--primary) 10%, transparent);
+    border-color:var(--primary); color:var(--primary);
+}
+.perm-check-box:hover { border-color:var(--primary); }
+</style>

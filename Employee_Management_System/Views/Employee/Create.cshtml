@@ -1,0 +1,29 @@
+@model EmployeeEditViewModel
+@{
+    ViewData["Title"] = "Add Employee";
+}
+
+<div class="breadcrumb-mini" data-stagger-item>
+    <a asp-controller="Employee" asp-action="Index">Employees</a>
+    <i class="bi bi-chevron-right" style="font-size:9px;"></i>
+    <span>Add Employee</span>
+</div>
+
+<div class="page-header" data-stagger-item>
+    <div>
+        <span class="page-eyebrow">Workforce</span>
+        <h1>Add New Employee</h1>
+        <p class="page-subtitle">Fill in the details below to onboard a new team member.</p>
+    </div>
+</div>
+
+<form asp-controller="Employee" asp-action="Create" method="post" novalidate data-stagger-item>
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="app-alert app-alert-danger mb-4" style="display:var(--validation-display, none);"></div>
+
+    @{await Html.RenderPartialAsync("_EmployeeForm", Model);}
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

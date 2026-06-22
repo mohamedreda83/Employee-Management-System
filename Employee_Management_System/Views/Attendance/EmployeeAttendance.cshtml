@@ -1,0 +1,141 @@
+@model EmployeeAttendanceViewModel
+@{
+    ViewData["Title"] = "My Attendance";
+}
+
+<div class="page-header" data-stagger-item>
+    <div>
+        <span class="page-eyebrow">Workforce</span>
+        <h1>My Attendance</h1>
+        <p class="page-subtitle">@Model.CurrentDate.ToString("dddd, MMMM d, yyyy")</p>
+    </div>
+    <a asp-controller="Attendance" asp-action="Review" class="btn btn-outline-primary btn-lift">
+        <i class="bi bi-bar-chart"></i> Team Review
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- Check-in/out card -->
+    <div class="col-lg-5">
+        <div class="card-3d-wrap">
+            <div class="card-3d stat-card stat-card--primary text-center" data-tilt data-stagger-item style="padding: var(--sp-5);">
+                <div class="card-3d-shine"></div>
+                <div class="card-3d-content">
+                    <div style="font-size:12px; letter-spacing:0.06em; text-transform:uppercase; color:rgba(255,255,255,0.75); font-weight:700; margin-bottom:8px;">Current Time</div>
+                    <div class="font-display" data-live-clock style="font-size:42px; font-weight:700; color:#fff; line-height:1; margin-bottom:24px;">--:--:-- --</div>
+
+                    @if (!Model.IsCheckedIn && !Model.IsCheckedOut)
+                    {
+                        <form asp-controller="Attendance" asp-action="CheckIn" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-lg btn-lift w-100" style="background:#fff; color:var(--primary);">
+                                <i class="bi bi-box-arrow-in-right"></i> Check In
+                            </button>
+                        </form>
+                    }
+                    else if (Model.IsCheckedIn && !Model.IsCheckedOut)
+                    {
+                        <div class="app-alert mb-3" style="background:rgba(255,255,255,0.16); color:#fff; border-color:rgba(255,255,255,0.25);">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <div>Checked in at @(Model.TodayRecord?.CheckInTime?.ToString("h:mm tt") ?? "—")</div>
+                        </div>
+                        <form asp-controller="Attendance" asp-action="CheckOut" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-lg btn-lift w-100" style="background:#fff; color:var(--primary);">
+                                <i class="bi bi-box-arrow-right"></i> Check Out
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="app-alert mb-0" style="background:rgba(255,255,255,0.16); color:#fff; border-color:rgba(255,255,255,0.25);">
+                            <i class="bi bi-flag-fill"></i>
+                            <div>
+                                Day complete — @(Model.TodayRecord?.CheckInTime?.ToString("h:mm tt") ?? "—") to @(Model.TodayRecord?.CheckOutTime?.ToString("h:mm tt") ?? "—")
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        @if (Model.TodayRecord != null)
+        {
+            <div class="app-card mt-4" data-stagger-item>
+                <div class="app-card-header"><h3>Today's Summary</h3></div>
+                <div class="app-card-body">
+                    <div class="row g-3 text-center">
+                        <div class="col-4">
+                            <div style="font-size:20px; font-weight:700; color:var(--warning);">@Model.TodayRecord.LateMinutes</div>
+                            <div style="font-size:11px; color:var(--text-tertiary);">Late (min)</div>
+                        </div>
+                        <div class="col-4">
+                            <div style="font-size:20px; font-weight:700; color:var(--danger);">@Model.TodayRecord.EarlyLeaveMinutes</div>
+                            <div style="font-size:11px; color:var(--text-tertiary);">Early Leave (min)</div>
+                        </div>
+                        <div class="col-4">
+                            <div style="font-size:20px; font-weight:700; color:var(--success);">@Model.TodayRecord.OvertimeMinutes</div>
+                            <div style="font-size:11px; color:var(--text-tertiary);">Overtime (min)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Monthly records -->
+    <div class="col-lg-7">
+        <div class="app-card h-100" data-stagger-item>
+            <div class="app-card-header">
+                <h3>This Month's Records</h3>
+                <span class="pill pill-info">@Model.MonthlyRecords.Count() days logged</span>
+            </div>
+            @if (!Model.MonthlyRecords.Any())
+            {
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="bi bi-calendar3"></i></div>
+                    <h6>No records yet this month</h6>
+                    <p>Your check-in history will build up here as the month progresses.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-wrap">
+                    <table class="app-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Check In</th>
+                                <th>Check Out</th>
+                                <th>Status</th>
+                                <th>Late</th>
+                                <th>OT</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var rec in Model.MonthlyRecords.OrderByDescending(r => r.Date))
+                            {
+                                var pillClass = rec.Status switch
+                                {
+                                    "Present" => "pill-success",
+                                    "Late" => "pill-warning",
+                                    "Absent" => "pill-danger",
+                                    "On Leave" => "pill-info",
+                                    _ => "pill-neutral"
+                                };
+                                <tr class="list-row-interactive">
+                                    <td>@rec.Date.ToString("MMM d")</td>
+                                    <td>@(rec.CheckInTime?.ToString("h:mm tt") ?? "—")</td>
+                                    <td>@(rec.CheckOutTime?.ToString("h:mm tt") ?? "—")</td>
+                                    <td><span class="pill @pillClass pill-glow">@(rec.Status ?? "—")</span></td>
+                                    <td style="color:var(--text-tertiary);">@(rec.LateMinutes > 0 ? $"{rec.LateMinutes}m" : "—")</td>
+                                    <td style="color:var(--text-tertiary);">@(rec.OvertimeMinutes > 0 ? $"{rec.OvertimeMinutes}m" : "—")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

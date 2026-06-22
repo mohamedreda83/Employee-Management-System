@@ -1,0 +1,172 @@
+@model VacationApprovalViewModel
+@{
+    ViewData["Title"] = "Vacation Approvals";
+}
+
+<div class="page-header" data-stagger-item>
+    <div>
+        <span class="page-eyebrow">Workforce</span>
+        <h1>Vacation Approvals</h1>
+        <p class="page-subtitle">Review and respond to pending vacation requests from your team.</p>
+    </div>
+    <a asp-controller="Vacation" asp-action="RequestForm" class="btn btn-outline-primary btn-lift">
+        <i class="bi bi-airplane"></i> My Requests
+    </a>
+</div>
+
+<!-- Sliding tabs -->
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4" data-stagger-item>
+    <div class="glass-tabs">
+        <div class="tab-indicator"></div>
+        @foreach (var tab in Model.Tabs)
+        {
+            <a asp-controller="VacationApproval" asp-action="Index" asp-route-tab="@tab"
+               class="tab-link @(Model.CurrentTab == tab ? "active" : "")">@tab</a>
+        }
+    </div>
+    <span class="pill pill-info">@Model.Requests.Count() request@(Model.Requests.Count() == 1 ? "" : "s")</span>
+</div>
+
+@if (!Model.Requests.Any())
+{
+    <div class="app-card" data-stagger-item>
+        <div class="empty-state">
+            <div class="empty-icon"><i class="bi bi-inbox"></i></div>
+            <h6>No @Model.CurrentTab.ToLower() requests</h6>
+            <p>There are currently no vacation requests in this category.</p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="app-card" data-stagger-item>
+        <div class="table-wrap">
+            <table class="app-table" id="approvalsTable">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Type</th>
+                        <th>Dates</th>
+                        <th>Days</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        @if (Model.CurrentTab == "Pending")
+                        {
+                            <th class="text-end">Actions</th>
+                        }
+                        else
+                        {
+                            <th>Decision</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var req in Model.Requests)
+                    {
+                        var initials = string.Join("", req.EmployeeName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => p[0])).ToUpper();
+                        var pillClass = req.Status switch
+                        {
+                            "Approved" => "pill-success",
+                            "Pending" => "pill-warning",
+                            "Rejected" => "pill-danger",
+                            _ => "pill-neutral"
+                        };
+                        <tr class="list-row-interactive" data-row-id="@req.Id">
+                            <td>
+                                <div class="table-person">
+                                    <div class="table-avatar">@initials</div>
+                                    <div><strong>@req.EmployeeName</strong></div>
+                                </div>
+                            </td>
+                            <td>@req.VacationType</td>
+                            <td style="font-size:12.5px;">@req.StartDate.ToString("MMM d") – @req.EndDate.ToString("MMM d, yyyy")</td>
+                            <td>@req.DaysRequested</td>
+                            <td style="font-size:12.5px; color:var(--text-secondary); max-width:200px;">@(string.IsNullOrEmpty(req.Reason) ? "—" : req.Reason)</td>
+                            <td><span class="pill @pillClass pill-glow">@(req.Status ?? "—")</span></td>
+                            @if (Model.CurrentTab == "Pending")
+                            {
+                                <td class="text-end">
+                                    <div class="d-flex gap-2 justify-content-end">
+                                        <button type="button" class="btn btn-success btn-sm btn-lift" data-decision-trigger data-bs-toggle="modal" data-bs-target="#approveModal" data-id="@req.Id" data-name="@req.EmployeeName">
+                                            <i class="bi bi-check-lg"></i> Approve
+                                        </button>
+                                        <button type="button" class="btn btn-danger btn-sm btn-lift" data-decision-trigger data-bs-toggle="modal" data-bs-target="#rejectModal" data-id="@req.Id" data-name="@req.EmployeeName">
+                                            <i class="bi bi-x-lg"></i> Reject
+                                        </button>
+                                    </div>
+                                </td>
+                            }
+                            else
+                            {
+                                <td style="font-size:12px; color:var(--text-tertiary);">
+                                    @if (!string.IsNullOrEmpty(req.ApprovedBy))
+                                    {
+                                        <div>by @req.ApprovedBy</div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(req.DecisionComment))
+                                    {
+                                        <div style="font-style:italic;">"@req.DecisionComment"</div>
+                                    }
+                                    @if (string.IsNullOrEmpty(req.ApprovedBy) && string.IsNullOrEmpty(req.DecisionComment))
+                                    {
+                                        <span>—</span>
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<!-- Approve Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form asp-controller="VacationApproval" asp-action="Approve" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-check-circle-fill" style="color:var(--success);"></i> Approve Request</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="form-text mb-3">Approving vacation request for <strong data-decision-name style="color:var(--text-primary);"></strong></p>
+                    <input type="hidden" name="id" data-decision-id />
+                    <label class="form-label">Comment (optional)</label>
+                    <textarea name="comment" class="form-control" rows="3" placeholder="Add an approval note..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-primary btn-lift" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success btn-lift"><i class="bi bi-check-lg"></i> Confirm Approval</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form asp-controller="VacationApproval" asp-action="Reject" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-x-circle-fill" style="color:var(--danger);"></i> Reject Request</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="form-text mb-3">Rejecting vacation request for <strong data-decision-name style="color:var(--text-primary);"></strong></p>
+                    <input type="hidden" name="id" data-decision-id />
+                    <label class="form-label">Reason for rejection</label>
+                    <textarea name="comment" class="form-control" rows="3" placeholder="Explain why this request is being rejected..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-primary btn-lift" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger btn-lift"><i class="bi bi-x-lg"></i> Confirm Rejection</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

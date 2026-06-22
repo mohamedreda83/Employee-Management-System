@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] · NovaHR</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lexend:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+    <link rel="stylesheet" href="~/css/tokens.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <div class="auth-shell">
+        <div class="auth-form-panel">
+            <div class="ambient-blobs d-lg-none" aria-hidden="true">
+                <div class="blob blob-1"></div>
+            </div>
+            <div style="max-width:380px; width:100%; margin:0 auto;">
+                <div class="auth-logo">
+                    <div class="mark">N</div>
+                    <div>
+                        <strong>NovaHR</strong>
+                        <span>Employee Management System</span>
+                    </div>
+                </div>
+
+                @{
+                    var authStatusMessage = TempData["StatusMessage"] as string;
+                }
+                @if (!string.IsNullOrEmpty(authStatusMessage))
+                {
+                    <div class="app-alert app-alert-success mb-4" role="alert">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <div>@authStatusMessage</div>
+                    </div>
+                }
+
+                @RenderBody()
+            </div>
+        </div>
+
+        <div class="auth-brand-panel d-none d-lg-flex">
+            <div class="blob blob-2" style="opacity:0.5;"></div>
+            <div class="blob blob-3" style="opacity:0.4;"></div>
+            <div class="shape" style="width:160px;height:160px; top:12%; right:14%; transform:rotate(18deg);"></div>
+            <div class="shape" style="width:90px;height:90px; bottom:18%; right:28%; transform:rotate(-12deg);"></div>
+
+            <div class="auth-brand-content">
+                <span class="badge-eyebrow"><i class="bi bi-stars"></i> Enterprise HR Platform</span>
+                <h2>Manage your entire workforce from a single command center.</h2>
+                <p>Attendance, vacations, payroll-ready records, and approvals — unified in one secure, modern workspace built for growing teams.</p>
+                <div class="auth-stat-row">
+                    <div class="stat">
+                        <strong data-count-to="248">0</strong>
+                        <span>Active Employees</span>
+                    </div>
+                    <div class="stat">
+                        <strong data-count-to="12">0</strong>
+                        <span>Departments</span>
+                    </div>
+                    <div class="stat">
+                        <strong data-count-to="99">0</strong>
+                        <span>% Uptime</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="~/js/motion.js" asp-append-version="true"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

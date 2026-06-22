@@ -1,0 +1,215 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    var totalForChart = Model.DepartmentChart.Any() ? Model.DepartmentChart.Max(d => d.EmployeeCount) : 1;
+    if (totalForChart == 0) totalForChart = 1;
+}
+
+<div class="page-header" data-stagger-item>
+    <div>
+        <span class="page-eyebrow">Overview</span>
+        <h1>Welcome back</h1>
+        <p class="page-subtitle">Here's what's happening across your organization today.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-controller="Employee" asp-action="Create" class="btn btn-primary btn-lift">
+            <i class="bi bi-person-plus"></i> Add Employee
+        </a>
+        <a asp-controller="Vacation" asp-action="RequestForm" class="btn btn-outline-primary btn-lift">
+            <i class="bi bi-airplane"></i> Add Vacation
+        </a>
+    </div>
+</div>
+
+<!-- Bento KPI row: one large primary card spanning 2 cols + 3 smaller KPI cards -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-6 col-md-6">
+        <div class="card-3d-wrap h-100">
+            <div class="card-3d stat-card stat-card--primary h-100" data-tilt data-stagger-item>
+                <div class="card-3d-shine"></div>
+                <div class="card-3d-content d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4 h-100">
+                    <div>
+                        <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+                        <div class="stat-value" data-count-to="@Model.TotalEmployees">0</div>
+                        <div class="stat-label">Total Employees</div>
+                        <div class="stat-trend up"><i class="bi bi-arrow-up-right"></i><span>Active workforce across all departments</span></div>
+                    </div>
+                    <div style="width:120px; height:120px; flex-shrink:0;" class="d-none d-lg-flex align-items-center justify-content-center">
+                        <svg viewBox="0 0 120 120" width="120" height="120">
+                            <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="10"/>
+                            <circle cx="60" cy="60" r="52" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round"
+                                    stroke-dasharray="326.7" stroke-dashoffset="@(326.7 * (1 - (Model.TotalEmployees > 0 ? (double)Model.PresentCount / Math.Max(Model.TotalEmployees,1) : 0)))"
+                                    transform="rotate(-90 60 60)"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+   <div class="col-xl-2 col-md-6 col-6">
+    @{
+        var presentCard = new { Label = "Present Today", Value = Model.PresentCount, Icon = "bi-person-check-fill", IconVariant = "green", Primary = false };
+    }
+    @await Html.PartialAsync("_StatCard", (object)presentCard)
+</div>
+<div class="col-xl-2 col-md-6 col-6">
+    @{
+        var absentCard = new { Label = "Absent Today", Value = Model.AbsentCount, Icon = "bi-person-x-fill", IconVariant = "red", Primary = false };
+    }
+    @await Html.PartialAsync("_StatCard", (object)absentCard)
+</div>
+<div class="col-xl-2 col-md-6 col-6">
+    @{
+        var leaveCard = new { Label = "On Leave", Value = Model.OnLeaveCount, Icon = "bi-airplane-fill", IconVariant = "orange", Primary = false };
+    }
+    @await Html.PartialAsync("_StatCard", (object)leaveCard)
+</div>
+
+<div class="row g-4">
+    <!-- Department distribution -->
+    <div class="col-xl-7">
+        <div class="app-card h-100" data-stagger-item>
+            <div class="app-card-header">
+                <div>
+                    <h3>Department Distribution</h3>
+                    <p class="mb-0" style="font-size:12px; color:var(--text-tertiary);">Headcount by department</p>
+                </div>
+                <span class="pill pill-info"><i class="bi bi-building"></i> @Model.DepartmentChart.Count() Departments</span>
+            </div>
+            <div class="app-card-body">
+                @if (!Model.DepartmentChart.Any())
+                {
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="bi bi-bar-chart"></i></div>
+                        <h6>No department data yet</h6>
+                        <p>Department headcount will appear here once employees are assigned.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="d-flex flex-column gap-3">
+                        @foreach (var dept in Model.DepartmentChart)
+                        {
+                            var pct = (int)Math.Round((double)dept.EmployeeCount / totalForChart * 100);
+                            <div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span style="font-size:13px; font-weight:600; color:var(--text-primary);">@dept.DepartmentName</span>
+                                    <span style="font-size:12.5px; color:var(--text-secondary);">@dept.EmployeeCount employees</span>
+                                </div>
+                                <div class="app-progress">
+                                    <div class="bar" style="width:@(pct)%;"></div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications panel -->
+    <div class="col-xl-5">
+        <div class="app-card h-100" data-stagger-item>
+            <div class="app-card-header">
+                <h3>Notifications</h3>
+                <span class="pill pill-danger">@Model.Notifications.Count(n => !n.IsRead) New</span>
+            </div>
+            <div class="app-card-body" style="max-height:340px; overflow-y:auto;">
+                @if (!Model.Notifications.Any())
+                {
+                    <div class="empty-state py-4">
+                        <div class="empty-icon"><i class="bi bi-bell-slash"></i></div>
+                        <h6>You're all caught up</h6>
+                        <p>No new notifications right now.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="d-flex flex-column gap-2">
+                        @foreach (var note in Model.Notifications)
+                        {
+                            <div class="d-flex gap-3 p-2 rounded-3" style="background:@(note.IsRead ? "transparent" : "rgba(46,117,182,0.045)");">
+                                <div class="icon-circle flex-shrink-0" style="width:36px;height:36px; background:var(--info-bg); color:var(--secondary); font-size:14px;">
+                                    <i class="bi bi-bell-fill"></i>
+                                </div>
+                                <div class="flex-fill">
+                                    <div class="d-flex justify-content-between gap-2">
+                                        <strong style="font-size:13px; color:var(--text-primary);">@note.Title</strong>
+                                        @if (!note.IsRead)
+                                        {
+                                            <span style="width:8px;height:8px;border-radius:50%;background:var(--secondary); flex-shrink:0; margin-top:5px;"></span>
+                                        }
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(note.Body))
+                                    {
+                                        <p class="mb-1" style="font-size:12.5px; color:var(--text-secondary);">@note.Body</p>
+                                    }
+                                    <span style="font-size:11px; color:var(--text-tertiary);">@note.CreatedAt.ToString("MMM d, h:mm tt")</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent activity -->
+    <div class="col-xl-7">
+        <div class="app-card h-100" data-stagger-item>
+            <div class="app-card-header">
+                <h3>Recent Activity</h3>
+                <a asp-controller="Attendance" asp-action="Review" class="btn btn-ghost btn-sm">View All <i class="bi bi-arrow-right"></i></a>
+            </div>
+            <div class="app-card-body">
+                @if (!Model.RecentActivities.Any())
+                {
+                    <div class="empty-state py-4">
+                        <div class="empty-icon"><i class="bi bi-activity"></i></div>
+                        <h6>No recent activity</h6>
+                        <p>Check-ins and attendance events will show up here.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="timeline-track">
+                        @foreach (var act in Model.RecentActivities)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-dot @(act.ActivityType == "Checked in" ? "done" : "pending")">
+                                    <i class="bi @(act.ActivityType == "Checked in" ? "bi-check-lg" : "bi-x-lg")" style="font-size:10px; color:@(act.ActivityType == "Checked in" ? "var(--success)" : "var(--text-tertiary)");"></i>
+                                </div>
+                                <div class="d-flex justify-content-between flex-wrap gap-1">
+                                    <span style="font-size:13px;"><strong style="color:var(--text-primary);">@act.EmployeeName</strong> <span style="color:var(--text-secondary);">— @act.ActivityType</span></span>
+                                    <span style="font-size:11.5px; color:var(--text-tertiary);">@act.Date.ToString("MMM d")@(string.IsNullOrEmpty(act.ActivityTime) ? "" : $" · {act.ActivityTime}")</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="col-xl-5">
+        <div class="app-card h-100" data-stagger-item>
+            <div class="app-card-header">
+                <h3>Quick Actions</h3>
+            </div>
+            <div class="app-card-body d-flex flex-column gap-2">
+                @foreach (var action in Model.QuickActions)
+                {
+                    var icon = action == "Add Employee" ? "bi-person-plus" : action == "Add Vacation" ? "bi-airplane" : action == "View Reports" ? "bi-graph-up" : "bi-lightning";
+                    var qaController = action == "Add Employee" ? "Employee" : action == "Add Vacation" ? "Vacation" : action == "View Reports" ? "Attendance" : "Dashboard";
+                    var qaAction = action == "Add Employee" ? "Create" : action == "Add Vacation" ? "RequestForm" : action == "View Reports" ? "Review" : "Index";
+                    <a asp-controller="@qaController" asp-action="@qaAction" class="btn btn-outline-primary btn-lift d-flex justify-content-between align-items-center">
+                        <span><i class="bi @icon me-2"></i>@action</span>
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</div>

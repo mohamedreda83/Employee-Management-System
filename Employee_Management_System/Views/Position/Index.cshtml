@@ -1,0 +1,251 @@
+@model PositionListViewModel
+@using Employee_Management_System.ViewModels.Position
+@{
+    ViewData["Title"] = "Positions";
+}
+
+<div class="page-header" data-stagger-item>
+    <div>
+        <span class="page-eyebrow">Administration</span>
+        <h1>Positions</h1>
+        <p class="page-subtitle">@Model.Positions.Count() position@(Model.Positions.Count() == 1 ? "" : "s") across your organisation.</p>
+    </div>
+    <a asp-controller="Position" asp-action="Create" class="btn btn-primary btn-lift">
+        <i class="bi bi-plus-lg"></i> Add Position
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert-toast alert-toast-success" data-stagger-item>
+        <i class="bi bi-check-circle-fill"></i> @TempData["Success"]
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert-toast alert-toast-danger" data-stagger-item>
+        <i class="bi bi-exclamation-circle-fill"></i> @TempData["Error"]
+    </div>
+}
+
+<!-- Filters -->
+<form asp-controller="Position" asp-action="Index" method="get" class="filter-toolbar" data-stagger-item>
+    <div class="row g-2 align-items-center">
+        <div class="col-lg-4 col-md-6">
+            <div class="input-icon-group">
+                <i class="bi bi-search"></i>
+                <input type="text" name="search" value="@Model.Search" class="form-control"
+                       placeholder="Search positions..." data-debounce-search />
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <select name="departmentId" class="form-select" data-auto-submit>
+                <option value="">All Departments</option>
+                @foreach (var dept in Model.Departments)
+                {
+                    <option value="@dept.Id" selected="@(Model.FilterDepartmentId == dept.Id ? "selected" : null)">@dept.Name</option>
+                }
+            </select>
+        </div>
+        @if (!string.IsNullOrWhiteSpace(Model.Search) || Model.FilterDepartmentId.HasValue)
+        {
+            <div class="col-auto">
+                <a asp-controller="Position" asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-x-lg"></i> Clear
+                </a>
+            </div>
+        }
+    </div>
+</form>
+
+<!-- Stats row -->
+@if (Model.Positions.Any())
+{
+    <div class="row g-4 mb-4" data-stagger-item>
+        <div class="col-xl-3 col-md-6">
+            <div class="app-card text-center">
+                <div class="app-card-body">
+                    <div class="icon-circle mx-auto mb-2" style="background:var(--info-bg);color:var(--secondary);">
+                        <i class="bi bi-briefcase-fill"></i>
+                    </div>
+                    <div class="stat-value">@Model.Positions.Count()</div>
+                    <div class="stat-label">Total Positions</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="app-card text-center">
+                <div class="app-card-body">
+                    <div class="icon-circle mx-auto mb-2" style="background:var(--success-bg);color:var(--success);">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <div class="stat-value">@Model.Positions.Sum(p => p.EmployeeCount)</div>
+                    <div class="stat-label">Employees Placed</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="app-card text-center">
+                <div class="app-card-body">
+                    <div class="icon-circle mx-auto mb-2" style="background:var(--warning-bg);color:var(--warning);">
+                        <i class="bi bi-diagram-3-fill"></i>
+                    </div>
+                    <div class="stat-value">@Model.Positions.Where(p => p.DepartmentName != null).Select(p => p.DepartmentName).Distinct().Count()</div>
+                    <div class="stat-label">Departments Covered</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="app-card text-center">
+                <div class="app-card-body">
+                    <div class="icon-circle mx-auto mb-2" style="background:var(--danger-bg);color:var(--danger);">
+                        <i class="bi bi-person-slash-fill"></i>
+                    </div>
+                    <div class="stat-value">@Model.Positions.Count(p => p.EmployeeCount == 0)</div>
+                    <div class="stat-label">Unfilled</div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Position table -->
+@if (!Model.Positions.Any())
+{
+    <div class="app-card" data-stagger-item>
+        <div class="empty-state">
+            <div class="empty-icon"><i class="bi bi-briefcase"></i></div>
+            <h6>No positions found</h6>
+            <p>@(string.IsNullOrWhiteSpace(Model.Search) && !Model.FilterDepartmentId.HasValue ? "Get started by creating your first position." : "Try adjusting your filters.")</p>
+            @if (string.IsNullOrWhiteSpace(Model.Search) && !Model.FilterDepartmentId.HasValue)
+            {
+                <a asp-controller="Position" asp-action="Create" class="btn btn-primary btn-lift btn-sm">
+                    <i class="bi bi-plus-lg"></i> Add Position
+                </a>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="app-card" data-stagger-item>
+        <div class="table-wrap">
+            <table class="app-table">
+                <thead>
+                    <tr>
+                        <th>Position Title</th>
+                        <th>Department</th>
+                        <th>Employees</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var pos in Model.Positions)
+                    {
+                        var filled = pos.EmployeeCount > 0;
+                        <tr class="list-row-interactive">
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="position-avatar">
+                                        <i class="bi bi-briefcase-fill"></i>
+                                    </div>
+                                    <strong>@pos.Title</strong>
+                                </div>
+                            </td>
+                            <td>
+                                @if (pos.DepartmentName != null)
+                                {
+                                    <span class="pill pill-neutral">@pos.DepartmentName</span>
+                                }
+                                else
+                                {
+                                    <span style="color:var(--text-tertiary); font-size:13px;">—</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span style="font-weight:600;">@pos.EmployeeCount</span>
+                                    <span style="font-size:12px; color:var(--text-tertiary);">employee@(pos.EmployeeCount == 1 ? "" : "s")</span>
+                                </div>
+                            </td>
+                            <td>
+                                @if (filled)
+                                {
+                                    <span class="pill pill-success pill-glow">Filled</span>
+                                }
+                                else
+                                {
+                                    <span class="pill pill-warning">Unfilled</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <div class="dropdown">
+                                    <button class="action-menu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Position" asp-action="Edit" asp-route-id="@pos.Id">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </a>
+                                        </li>
+                                        @if (!filled)
+                                        {
+                                            <li><hr class="dropdown-divider" /></li>
+                                            <li>
+                                                <form asp-controller="Position" asp-action="Delete" asp-route-id="@pos.Id"
+                                                      method="post"
+                                                      onsubmit="return confirm('Delete position \'@pos.Title\'? This cannot be undone.')">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="dropdown-item text-danger">
+                                                        <i class="bi bi-trash3"></i> Delete
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<style>
+    .position-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: #fff;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .alert-toast {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 18px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 20px;
+    }
+    .alert-toast-success {
+        background: var(--success-bg);
+        color: var(--success);
+        border: 1px solid color-mix(in srgb, var(--success) 25%, transparent);
+    }
+    .alert-toast-danger {
+        background: var(--danger-bg);
+        color: var(--danger);
+        border: 1px solid color-mix(in srgb, var(--danger) 25%, transparent);
+    }
+</style>

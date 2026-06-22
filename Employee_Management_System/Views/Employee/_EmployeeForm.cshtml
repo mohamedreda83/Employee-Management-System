@@ -1,0 +1,164 @@
+@model EmployeeEditViewModel
+
+@{
+    bool isEdit = Model.Id > 0;
+}
+
+<input type="hidden" asp-for="Id" />
+
+<div class="row g-4">
+    <!-- Left column: avatar + status -->
+    <div class="col-lg-4">
+        <div class="app-card app-card-body text-center">
+            <label class="form-label d-block mb-3">Profile Photo</label>
+            <div class="d-flex flex-column align-items-center gap-3">
+                <div class="avatar-upload" id="avatarPreview">
+                    @if (!string.IsNullOrEmpty(Model.ProfilePhoto))
+                    {
+                        <img src="@Model.ProfilePhoto" alt="Profile preview" />
+                    }
+                    else
+                    {
+                        <i class="bi bi-person"></i>
+                    }
+                </div>
+                <div class="input-icon-group w-100">
+                    <i class="bi bi-link-45deg"></i>
+                    <input asp-for="ProfilePhoto" class="form-control" placeholder="Photo URL (https://...)" />
+                </div>
+                <span asp-validation-for="ProfilePhoto" class="invalid-feedback d-block"></span>
+                <p class="form-text mb-0">Paste a direct image URL. File upload can be wired to your storage provider.</p>
+            </div>
+
+            <hr class="my-4" style="border-color:var(--border-subtle);" />
+
+            <div class="text-start">
+                <label asp-for="EmploymentStatus" class="form-label">Employment Status</label>
+                <select asp-for="EmploymentStatus" class="form-select">
+                    <option value="">Select status</option>
+                    <option value="Active" selected="@(Model.EmploymentStatus == "Active" ? "selected" : null)">Active</option>
+                    <option value="Inactive" selected="@(Model.EmploymentStatus == "Inactive" ? "selected" : null)">Inactive</option>
+                    <option value="On Leave" selected="@(Model.EmploymentStatus == "On Leave" ? "selected" : null)">On Leave</option>
+                </select>
+                <span asp-validation-for="EmploymentStatus" class="invalid-feedback d-block"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right column: form fields -->
+    <div class="col-lg-8">
+        <div class="app-card app-card-body">
+            <div class="form-section-title"><i class="bi bi-person-vcard"></i> Personal Information</div>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label asp-for="EmployeeNumber" class="form-label">Employee Number <span class="required-dot">*</span></label>
+                    <input asp-for="EmployeeNumber" class="form-control" placeholder="e.g. EMP-1042" />
+                    <span asp-validation-for="EmployeeNumber" class="invalid-feedback d-block"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="FullName" class="form-label">Full Name <span class="required-dot">*</span></label>
+                    <input asp-for="FullName" class="form-control" placeholder="e.g. Sarah Mitchell" />
+                    <span asp-validation-for="FullName" class="invalid-feedback d-block"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Gender" class="form-label">Gender</label>
+                    <select asp-for="Gender" class="form-select">
+                        <option value="">Select gender</option>
+                        <option value="Male" selected="@(Model.Gender == "Male" ? "selected" : null)">Male</option>
+                        <option value="Female" selected="@(Model.Gender == "Female" ? "selected" : null)">Female</option>
+                        <option value="Other" selected="@(Model.Gender == "Other" ? "selected" : null)">Other</option>
+                    </select>
+                    <span asp-validation-for="Gender" class="invalid-feedback d-block"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="DateOfBirth" class="form-label">Date of Birth</label>
+                    <input asp-for="DateOfBirth" type="date" class="form-control" />
+                    <span asp-validation-for="DateOfBirth" class="invalid-feedback d-block"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="NationalId" class="form-label">National ID</label>
+                    <input asp-for="NationalId" class="form-control" placeholder="National ID number" />
+                    <span asp-validation-for="NationalId" class="invalid-feedback d-block"></span>
+                </div>
+            </div>
+
+            <div class="form-section-title"><i class="bi bi-telephone"></i> Contact Information</div>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label asp-for="Email" class="form-label">Email Address</label>
+                    <div class="input-icon-group">
+                        <i class="bi bi-envelope"></i>
+                        <input asp-for="Email" class="form-control" placeholder="name@company.com" />
+                    </div>
+                    <span asp-validation-for="Email" class="invalid-feedback d-block"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Phone" class="form-label">Phone Number</label>
+                    <div class="input-icon-group">
+                        <i class="bi bi-telephone"></i>
+                        <input asp-for="Phone" class="form-control" placeholder="+20 1xx xxx xxxx" />
+                    </div>
+                    <span asp-validation-for="Phone" class="invalid-feedback d-block"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="Address" class="form-label">Address</label>
+                    <textarea asp-for="Address" class="form-control" rows="2" placeholder="Street, city, country"></textarea>
+                    <span asp-validation-for="Address" class="invalid-feedback d-block"></span>
+                </div>
+            </div>
+
+            <div class="form-section-title"><i class="bi bi-briefcase"></i> Employment Details</div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="DepartmentId" class="form-label">Department <span class="required-dot">*</span></label>
+                    <select asp-for="DepartmentId" class="form-select">
+                        <option value="">Select department</option>
+                        @foreach (var dept in Model.Departments)
+                        {
+                            <option value="@dept.Id" selected="@(Model.DepartmentId == dept.Id ? "selected" : null)">@dept.Name</option>
+                        }
+                    </select>
+                    <span asp-validation-for="DepartmentId" class="invalid-feedback d-block"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="PositionId" class="form-label">Position</label>
+                    <select asp-for="PositionId" class="form-select">
+                        <option value="">Select position</option>
+                        @foreach (var pos in Model.Positions)
+                        {
+                            <option value="@pos.Id" selected="@(Model.PositionId == pos.Id ? "selected" : null)">@pos.Name</option>
+                        }
+                    </select>
+                    <span asp-validation-for="PositionId" class="invalid-feedback d-block"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Salary" class="form-label">Salary <span class="required-dot">*</span></label>
+                    <div class="input-icon-group">
+                        <i class="bi bi-cash-stack"></i>
+                        <input asp-for="Salary" type="number" step="0.01" class="form-control" placeholder="0.00" />
+                    </div>
+                    <span asp-validation-for="Salary" class="invalid-feedback d-block"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="HireDate" class="form-label">Hire Date</label>
+                    <input asp-for="HireDate" type="date" class="form-control" />
+                    <span asp-validation-for="HireDate" class="invalid-feedback d-block"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="Notes" class="form-label">Notes</label>
+                    <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Additional notes about this employee..."></textarea>
+                    <span asp-validation-for="Notes" class="invalid-feedback d-block"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-4">
+            <a asp-controller="Employee" asp-action="Index" class="btn btn-outline-primary btn-lift">
+                <i class="bi bi-x-lg"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-primary btn-lift">
+                <i class="bi bi-check-lg"></i> @(isEdit ? "Save Changes" : "Create Employee")
+            </button>
+        </div>
+    </div>
+</div>

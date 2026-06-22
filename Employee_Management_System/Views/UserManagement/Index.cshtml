@@ -1,0 +1,241 @@
+@model UserManagementListViewModel
+@using Employee_Management_System.ViewModels.UserManagement
+@{
+    ViewData["Title"] = "User Management";
+    var withAccount = Model.Rows.Count(r => r.HasAccount);
+    var withoutAccount = Model.Rows.Count(r => !r.HasAccount);
+    var lockedOut = Model.Rows.Count(r => r.IsLockedOut);
+}
+
+<div class="page-header" data-stagger-item>
+    <div>
+        <span class="page-eyebrow">Administration</span>
+        <h1>User Management</h1>
+        <p class="page-subtitle">Manage system access, roles, and passwords for your employees.</p>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert-toast alert-toast-success" data-stagger-item>
+        <i class="bi bi-check-circle-fill"></i> @TempData["Success"]
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert-toast alert-toast-danger" data-stagger-item>
+        <i class="bi bi-exclamation-circle-fill"></i> @TempData["Error"]
+    </div>
+}
+
+<!-- Stats row -->
+<div class="row g-4 mb-4" data-stagger-item>
+    <div class="col-xl-3 col-md-6">
+        <div class="app-card text-center">
+            <div class="app-card-body">
+                <div class="icon-circle mx-auto mb-2" style="background:var(--info-bg);color:var(--secondary);">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <div class="stat-value">@Model.Rows.Count()</div>
+                <div class="stat-label">Total Employees</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="app-card text-center">
+            <div class="app-card-body">
+                <div class="icon-circle mx-auto mb-2" style="background:var(--success-bg);color:var(--success);">
+                    <i class="bi bi-shield-check-fill"></i>
+                </div>
+                <div class="stat-value">@withAccount</div>
+                <div class="stat-label">Have Accounts</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="app-card text-center">
+            <div class="app-card-body">
+                <div class="icon-circle mx-auto mb-2" style="background:var(--warning-bg);color:var(--warning);">
+                    <i class="bi bi-person-x-fill"></i>
+                </div>
+                <div class="stat-value">@withoutAccount</div>
+                <div class="stat-label">No Account</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="app-card text-center">
+            <div class="app-card-body">
+                <div class="icon-circle mx-auto mb-2" style="background:var(--danger-bg);color:var(--danger);">
+                    <i class="bi bi-lock-fill"></i>
+                </div>
+                <div class="stat-value">@lockedOut</div>
+                <div class="stat-label">Locked Out</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search -->
+<form asp-controller="UserManagement" asp-action="Index" method="get" class="filter-toolbar" data-stagger-item>
+    <div class="row g-2 align-items-center">
+        <div class="col-lg-4 col-md-6">
+            <div class="input-icon-group">
+                <i class="bi bi-search"></i>
+                <input type="text" name="search" value="@Model.Search" class="form-control"
+                       placeholder="Search by name, employee#, or email..." data-debounce-search />
+            </div>
+        </div>
+        @if (!string.IsNullOrWhiteSpace(Model.Search))
+        {
+            <div class="col-auto">
+                <a asp-controller="UserManagement" asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-x-lg"></i> Clear
+                </a>
+            </div>
+        }
+    </div>
+</form>
+
+<!-- Table -->
+@if (!Model.Rows.Any())
+{
+    <div class="app-card" data-stagger-item>
+        <div class="empty-state">
+            <div class="empty-icon"><i class="bi bi-shield"></i></div>
+            <h6>No employees found</h6>
+            <p>Try adjusting your search.</p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="app-card" data-stagger-item>
+        <div class="table-wrap">
+            <table class="app-table">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Department</th>
+                        <th>Account</th>
+                        <th>Roles</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.Rows)
+                    {
+                        var initials = string.Join("", row.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => p[0])).ToUpper();
+                        <tr class="list-row-interactive">
+                            <td>
+                                <div class="table-person">
+                                    <div class="table-avatar">@initials</div>
+                                    <div>
+                                        <strong>@row.FullName</strong>
+                                        <span>#@row.EmployeeNumber</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>@(row.DepartmentName ?? "—")</td>
+                            <td>
+                                @if (row.HasAccount)
+                                {
+                                    <div style="font-size:12.5px;">
+                                        <i class="bi bi-check-circle-fill text-success me-1"></i>
+                                        <span style="color:var(--text-secondary);">@row.Email</span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span style="font-size:12.5px; color:var(--text-tertiary);">
+                                        <i class="bi bi-dash-circle me-1"></i>No account
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                <div class="d-flex flex-wrap gap-1">
+                                    @foreach (var role in row.Roles)
+                                    {
+                                        var roleClass = role switch
+                                        {
+                                            "Admin" => "pill-danger",
+                                            "HR" => "pill-warning",
+                                            _ => "pill-neutral"
+                                        };
+                                        <span class="pill @roleClass">@role</span>
+                                    }
+                                    @if (!row.Roles.Any())
+                                    {
+                                        <span style="color:var(--text-tertiary); font-size:12px;">—</span>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                @if (!row.HasAccount)
+                                {
+                                    <span class="pill pill-neutral">No Account</span>
+                                }
+                                else if (row.IsLockedOut)
+                                {
+                                    <span class="pill pill-danger"><i class="bi bi-lock me-1"></i>Locked</span>
+                                }
+                                else
+                                {
+                                    <span class="pill pill-success pill-glow"><i class="bi bi-unlock me-1"></i>Active</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <div class="dropdown">
+                                    <button class="action-menu-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        @if (!row.HasAccount)
+                                        {
+                                            <li>
+                                                <a class="dropdown-item" asp-controller="UserManagement" asp-action="Create" asp-route-employeeId="@row.EmployeeId">
+                                                    <i class="bi bi-person-plus-fill"></i> Create Account
+                                                </a>
+                                            </li>
+                                        }
+                                        else
+                                        {
+                                            <li>
+                                                <a class="dropdown-item" asp-controller="UserManagement" asp-action="Edit" asp-route-userId="@row.UserId">
+                                                    <i class="bi bi-shield-lock"></i> Edit Roles & Access
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" asp-controller="UserManagement" asp-action="ResetPassword" asp-route-userId="@row.UserId">
+                                                    <i class="bi bi-key-fill"></i> Reset Password
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider" /></li>
+                                            <li>
+                                                <form asp-controller="UserManagement" asp-action="Delete" asp-route-userId="@row.UserId"
+                                                      method="post"
+                                                      onsubmit="return confirm('Remove account for @row.FullName? The employee record will be kept.')">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="dropdown-item text-danger">
+                                                        <i class="bi bi-trash3"></i> Remove Account
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<style>
+.alert-toast { display:flex; align-items:center; gap:10px; padding:12px 18px; border-radius:12px; font-size:14px; font-weight:500; margin-bottom:20px; }
+.alert-toast-success { background:var(--success-bg); color:var(--success); border:1px solid color-mix(in srgb,var(--success) 25%,transparent); }
+.alert-toast-danger  { background:var(--danger-bg);  color:var(--danger);  border:1px solid color-mix(in srgb,var(--danger)  25%,transparent); }
+</style>

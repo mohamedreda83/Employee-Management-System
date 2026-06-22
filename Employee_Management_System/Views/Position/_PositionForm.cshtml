@@ -1,0 +1,24 @@
+@model PositionFormViewModel
+@using Employee_Management_System.ViewModels.Position
+
+<div class="mb-4">
+    <label asp-for="Title" class="form-label">
+        Position Title <span class="required-dot">*</span>
+    </label>
+    <input asp-for="Title" class="form-control" placeholder="e.g. Software Engineer, HR Manager..." />
+    <span asp-validation-for="Title" class="invalid-feedback d-block"></span>
+</div>
+
+<div class="mb-4">
+    <label asp-for="DepartmentId" class="form-label">Department</label>
+    <select asp-for="DepartmentId" class="form-select">
+        <option value="">— No department —</option>
+        @foreach (var d in Model.Departments)
+        {
+            <option value="@d.Id">@d.Name</option>
+        }
+    </select>
+    <span class="form-text" style="color:var(--text-tertiary); font-size:12px;">
+        <i class="bi bi-info-circle me-1"></i>Optional — link this position to a specific department.
+    </span>
+</div>

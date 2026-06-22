@@ -1,0 +1,37 @@
+@{
+    ViewData["Title"] = "Access Denied";
+    Layout = "_AuthLayout";
+}
+
+@using Employee_Management_System.Models
+
+<div class="icon-circle mb-4" style="background:var(--warning-bg); color:var(--warning); width:64px; height:64px; font-size:26px;">
+    <i class="bi bi-shield-exclamation"></i>
+</div>
+
+<span class="page-eyebrow" style="color:var(--warning);">403 · Forbidden</span>
+<h1 class="mb-2" style="font-size:26px;">Access denied</h1>
+<p class="page-subtitle mb-4">
+    You don't have permission to view this page. If you believe this is a mistake, contact your system administrator.
+</p>
+
+<div class="d-flex flex-column gap-2">
+    @if (User.HasClaim("Permission", Permissions.Dashboard.ViewEmployee))
+    {
+        <a asp-controller="Dashboard" asp-action="EmployeeIndex" class="btn btn-primary btn-lift w-100">
+            <i class="bi bi-house-door"></i> Go to Dashboard
+        </a>
+    }
+    else
+    {
+        <a asp-controller="Dashboard" asp-action="Index" class="btn btn-primary btn-lift w-100">
+            <i class="bi bi-house-door"></i> Go to Dashboard
+        </a>
+    }
+    <form asp-controller="Auth" asp-action="Logout" method="post" class="m-0">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn btn-outline-primary btn-lift w-100">
+            <i class="bi bi-box-arrow-right"></i> Sign Out
+        </button>
+    </form>
+</div>

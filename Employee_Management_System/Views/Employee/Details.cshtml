@@ -1,0 +1,221 @@
+@model EmployeeDetailsViewModel
+@{
+    ViewData["Title"] = Model.FullName;
+    var initials = string.Join("", Model.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => p[0])).ToUpper();
+    var pillClass = Model.EmploymentStatus switch
+    {
+        "Active" => "pill-success",
+        "On Leave" => "pill-warning",
+        "Inactive" => "pill-danger",
+        _ => "pill-neutral"
+    };
+}
+
+<div class="breadcrumb-mini" data-stagger-item>
+    <a asp-controller="Employee" asp-action="Index">Employees</a>
+    <i class="bi bi-chevron-right" style="font-size:9px;"></i>
+    <span>@Model.FullName</span>
+</div>
+
+<!-- Profile header -->
+<div class="app-card mb-4" data-stagger-item>
+    <div class="app-card-body">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
+            <div class="d-flex align-items-center gap-3">
+                @if (!string.IsNullOrEmpty(Model.ProfilePhoto))
+                {
+                    <img src="@Model.ProfilePhoto" alt="@Model.FullName" style="width:84px;height:84px;border-radius:50%;object-fit:cover;" />
+                }
+                else
+                {
+                    <div class="table-avatar" style="width:84px;height:84px;font-size:26px;">@initials</div>
+                }
+                <div>
+                    <h1 style="font-size:22px; margin-bottom:4px;">@Model.FullName</h1>
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <span style="font-size:13px; color:var(--text-tertiary);">#@Model.EmployeeNumber</span>
+                        <span class="pill @pillClass pill-glow">@Model.EmploymentStatus</span>
+                        @if (!string.IsNullOrEmpty(Model.Position))
+                        {
+                            <span class="pill pill-info">@Model.Position</span>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <a asp-controller="Employee" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-lift">
+                    <i class="bi bi-pencil"></i> Edit Profile
+                </a>
+                <a asp-controller="Employee" asp-action="Index" class="btn btn-outline-primary btn-lift">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left: info cards -->
+    <div class="col-lg-4">
+        <div class="app-card mb-4" data-stagger-item>
+            <div class="app-card-header"><h3>Personal Information</h3></div>
+            <div class="app-card-body d-flex flex-column gap-3">
+                <div class="d-flex justify-content-between">
+                    <span style="font-size:12.5px; color:var(--text-tertiary);">Gender</span>
+                    <span style="font-size:13px; font-weight:600;">@(Model.Gender ?? "—")</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span style="font-size:12.5px; color:var(--text-tertiary);">Date of Birth</span>
+                    <span style="font-size:13px; font-weight:600;">@(Model.DateOfBirth?.ToString("MMM d, yyyy") ?? "—")</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span style="font-size:12.5px; color:var(--text-tertiary);">National ID</span>
+                    <span style="font-size:13px; font-weight:600;">@(Model.NationalId ?? "—")</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span style="font-size:12.5px; color:var(--text-tertiary);">Email</span>
+                    <span style="font-size:13px; font-weight:600;">@(Model.Email ?? "—")</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span style="font-size:12.5px; color:var(--text-tertiary);">Phone</span>
+                    <span style="font-size:13px; font-weight:600;">@(Model.Phone ?? "—")</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span style="font-size:12.5px; color:var(--text-tertiary);">Address</span>
+                    <span style="font-size:13px; font-weight:600; text-align:right;">@(Model.Address ?? "—")</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="app-card" data-stagger-item>
+            <div class="app-card-header"><h3>Employment Details</h3></div>
+            <div class="app-card-body d-flex flex-column gap-3">
+                <div class="d-flex justify-content-between">
+                    <span style="font-size:12.5px; color:var(--text-tertiary);">Department</span>
+                    <span style="font-size:13px; font-weight:600;">@(Model.Department ?? "—")</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span style="font-size:12.5px; color:var(--text-tertiary);">Position</span>
+                    <span style="font-size:13px; font-weight:600;">@(Model.Position ?? "—")</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span style="font-size:12.5px; color:var(--text-tertiary);">Salary</span>
+                    <span style="font-size:13px; font-weight:600;">@Model.Salary.ToString("C")</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span style="font-size:12.5px; color:var(--text-tertiary);">Hire Date</span>
+                    <span style="font-size:13px; font-weight:600;">@(Model.HireDate?.ToString("MMM d, yyyy") ?? "—")</span>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Notes))
+                {
+                    <div>
+                        <span style="font-size:12.5px; color:var(--text-tertiary);">Notes</span>
+                        <p style="font-size:13px; margin-top:4px; color:var(--text-secondary);">@Model.Notes</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: history -->
+    <div class="col-lg-8">
+        <div class="app-card mb-4" data-stagger-item>
+            <div class="app-card-header">
+                <h3>Attendance History</h3>
+                <span class="pill pill-info">@Model.AttendanceHistory.Count() records</span>
+            </div>
+            @if (!Model.AttendanceHistory.Any())
+            {
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="bi bi-clock-history"></i></div>
+                    <h6>No attendance records</h6>
+                    <p>Attendance history will appear here once recorded.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-wrap">
+                    <table class="app-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Check In</th>
+                                <th>Check Out</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var rec in Model.AttendanceHistory.Take(10))
+                            {
+                                var attPill = rec.Status switch
+                                {
+                                    "Present" => "pill-success",
+                                    "Late" => "pill-warning",
+                                    "Absent" => "pill-danger",
+                                    "On Leave" => "pill-info",
+                                    _ => "pill-neutral"
+                                };
+                                <tr class="list-row-interactive">
+                                    <td>@rec.Date.ToString("MMM d, yyyy")</td>
+                                    <td>@(rec.CheckInTime?.ToString("h:mm tt") ?? "—")</td>
+                                    <td>@(rec.CheckOutTime?.ToString("h:mm tt") ?? "—")</td>
+                                    <td><span class="pill @attPill pill-glow">@(rec.Status ?? "—")</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+
+        <div class="app-card" data-stagger-item>
+            <div class="app-card-header">
+                <h3>Vacation History</h3>
+                <span class="pill pill-info">@Model.VacationHistory.Count() requests</span>
+            </div>
+            @if (!Model.VacationHistory.Any())
+            {
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="bi bi-airplane"></i></div>
+                    <h6>No vacation requests</h6>
+                    <p>Vacation history will appear here once requested.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-wrap">
+                    <table class="app-table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Days</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var vac in Model.VacationHistory)
+                            {
+                                var vacPill = vac.Status switch
+                                {
+                                    "Approved" => "pill-success",
+                                    "Pending" => "pill-warning",
+                                    "Rejected" => "pill-danger",
+                                    _ => "pill-neutral"
+                                };
+                                <tr class="list-row-interactive">
+                                    <td>@(vac.VacationType ?? "—")</td>
+                                    <td>@vac.StartDate.ToString("MMM d, yyyy")</td>
+                                    <td>@vac.EndDate.ToString("MMM d, yyyy")</td>
+                                    <td>@vac.DaysRequested</td>
+                                    <td><span class="pill @vacPill pill-glow">@(vac.Status ?? "—")</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

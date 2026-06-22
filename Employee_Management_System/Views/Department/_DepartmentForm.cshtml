@@ -1,0 +1,23 @@
+@model DepartmentFormViewModel
+
+<div class="mb-4">
+    <label asp-for="Name" class="form-label">
+        Department Name <span class="required-dot">*</span>
+    </label>
+    <input asp-for="Name" class="form-control" placeholder="e.g. Engineering, Human Resources..." />
+    <span asp-validation-for="Name" class="invalid-feedback d-block"></span>
+</div>
+
+<div class="mb-4">
+    <label asp-for="ManagerId" class="form-label">Department Manager</label>
+    <select asp-for="ManagerId" class="form-select">
+        <option value="">— No manager —</option>
+        @foreach (var m in Model.Managers)
+        {
+            <option value="@m.Id">@m.FullName</option>
+        }
+    </select>
+    <span class="form-text" style="color:var(--text-tertiary); font-size:12px;">
+        <i class="bi bi-info-circle me-1"></i>Optional — you can assign a manager later.
+    </span>
+</div>

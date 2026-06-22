@@ -1,0 +1,48 @@
+@model DepartmentFormViewModel
+@{
+    ViewData["Title"] = "New Department";
+}
+
+<div class="page-header" data-stagger-item>
+    <div>
+        <span class="page-eyebrow">Administration</span>
+        <h1>New Department</h1>
+        <p class="page-subtitle">Add a new department to your organisation structure.</p>
+    </div>
+    <a asp-controller="Department" asp-action="Index" class="btn btn-outline-secondary btn-lift">
+        <i class="bi bi-arrow-left"></i> Back to Departments
+    </a>
+</div>
+
+<div class="row justify-content-center" data-stagger-item>
+    <div class="col-lg-6">
+        <div class="app-card">
+            <div class="app-card-header">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="icon-circle" style="background:var(--info-bg);color:var(--secondary);">
+                        <i class="bi bi-diagram-3-fill"></i>
+                    </div>
+                    <h3 class="mb-0">Department Details</h3>
+                </div>
+            </div>
+            <div class="app-card-body">
+                <form asp-controller="Department" asp-action="Create" method="post" novalidate>
+                    @Html.AntiForgeryToken()
+                    @await Html.PartialAsync("_DepartmentForm", Model)
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-lift flex-grow-1">
+                            <i class="bi bi-plus-lg me-1"></i> Create Department
+                        </button>
+                        <a asp-controller="Department" asp-action="Index" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

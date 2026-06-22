@@ -1,0 +1,223 @@
+@model DepartmentListViewModel
+@using Employee_Management_System.ViewModels.Department
+@{
+    ViewData["Title"] = "Departments";
+}
+
+<div class="page-header" data-stagger-item>
+    <div>
+        <span class="page-eyebrow">Administration</span>
+        <h1>Departments</h1>
+        <p class="page-subtitle">@Model.Departments.Count() department@(Model.Departments.Count() == 1 ? "" : "s") in your organisation.</p>
+    </div>
+    <a asp-controller="Department" asp-action="Create" class="btn btn-primary btn-lift">
+        <i class="bi bi-plus-lg"></i> Add Department
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert-toast alert-toast-success" data-stagger-item>
+        <i class="bi bi-check-circle-fill"></i> @TempData["Success"]
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert-toast alert-toast-danger" data-stagger-item>
+        <i class="bi bi-exclamation-circle-fill"></i> @TempData["Error"]
+    </div>
+}
+
+<!-- Search toolbar -->
+<form asp-controller="Department" asp-action="Index" method="get" class="filter-toolbar" data-stagger-item>
+    <div class="row g-2 align-items-center">
+        <div class="col-lg-4 col-md-6">
+            <div class="input-icon-group">
+                <i class="bi bi-search"></i>
+                <input type="text" name="search" value="@Model.Search" class="form-control"
+                       placeholder="Search departments..." data-debounce-search />
+            </div>
+        </div>
+        <div class="col-auto">
+            @if (!string.IsNullOrWhiteSpace(Model.Search))
+            {
+                <a asp-controller="Department" asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-x-lg"></i> Clear
+                </a>
+            }
+        </div>
+    </div>
+</form>
+
+@if (!Model.Departments.Any())
+{
+    <div class="app-card" data-stagger-item>
+        <div class="empty-state">
+            <div class="empty-icon"><i class="bi bi-diagram-3"></i></div>
+            <h6>No departments found</h6>
+            <p>@(string.IsNullOrWhiteSpace(Model.Search) ? "Get started by adding your first department." : "Try a different search term.")</p>
+            @if (string.IsNullOrWhiteSpace(Model.Search))
+            {
+                <a asp-controller="Department" asp-action="Create" class="btn btn-primary btn-lift btn-sm">
+                    <i class="bi bi-plus-lg"></i> Add Department
+                </a>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <!-- Stats row -->
+    <div class="row g-4 mb-4" data-stagger-item>
+        <div class="col-xl-3 col-md-6">
+            <div class="app-card text-center">
+                <div class="app-card-body">
+                    <div class="icon-circle mx-auto mb-2" style="background:var(--info-bg);color:var(--secondary);">
+                        <i class="bi bi-diagram-3-fill"></i>
+                    </div>
+                    <div class="stat-value">@Model.Departments.Count()</div>
+                    <div class="stat-label">Total Departments</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="app-card text-center">
+                <div class="app-card-body">
+                    <div class="icon-circle mx-auto mb-2" style="background:var(--success-bg);color:var(--success);">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <div class="stat-value">@Model.Departments.Sum(d => d.EmployeeCount)</div>
+                    <div class="stat-label">Total Employees</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="app-card text-center">
+                <div class="app-card-body">
+                    <div class="icon-circle mx-auto mb-2" style="background:var(--warning-bg);color:var(--warning);">
+                        <i class="bi bi-person-badge-fill"></i>
+                    </div>
+                    <div class="stat-value">@Model.Departments.Count(d => d.ManagerName != null)</div>
+                    <div class="stat-label">With Manager</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="app-card text-center">
+                <div class="app-card-body">
+                    <div class="icon-circle mx-auto mb-2" style="background:var(--danger-bg);color:var(--danger);">
+                        <i class="bi bi-person-x-fill"></i>
+                    </div>
+                    <div class="stat-value">@Model.Departments.Count(d => d.ManagerName == null)</div>
+                    <div class="stat-label">No Manager</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Department cards -->
+    <div class="row g-4">
+        @foreach (var dept in Model.Departments)
+        {
+            var initials = string.Join("", dept.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(w => w[0])).ToUpper();
+            <div class="col-xl-4 col-lg-6" data-stagger-item>
+                <div class="app-card h-100 dept-card">
+                    <div class="app-card-body d-flex flex-column gap-3">
+                        <!-- Header -->
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="dept-avatar">@initials</div>
+                            <div class="flex-grow-1 min-w-0">
+                                <h5 class="mb-0 text-truncate">@dept.Name</h5>
+                                @if (dept.ManagerName != null)
+                                {
+                                    <span style="font-size:12.5px; color:var(--text-tertiary);">
+                                        <i class="bi bi-person-fill me-1"></i>@dept.ManagerName
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span style="font-size:12.5px; color:var(--text-tertiary);">No manager assigned</span>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Employee count bar -->
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span style="font-size:12px; color:var(--text-secondary);">Employees</span>
+                                <strong style="font-size:13px;">@dept.EmployeeCount</strong>
+                            </div>
+                            @{
+                                var maxCount = Model.Departments.Max(d => d.EmployeeCount);
+                                var pct = maxCount > 0 ? (int)Math.Round((double)dept.EmployeeCount / maxCount * 100) : 0;
+                            }
+                            <div class="app-progress">
+                                <div class="bar" style="width:@(pct)%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="d-flex gap-2 mt-auto pt-1">
+                            <a asp-controller="Department" asp-action="Edit" asp-route-id="@dept.Id"
+                               class="btn btn-outline-secondary btn-sm flex-grow-1">
+                                <i class="bi bi-pencil me-1"></i> Edit
+                            </a>
+                            <form asp-controller="Department" asp-action="Delete" asp-route-id="@dept.Id"
+                                  method="post" onsubmit="return confirm('Delete department \'@dept.Name\'? This cannot be undone.')">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-outline-danger btn-sm"
+                                        @(dept.EmployeeCount > 0 ? "disabled title=\"Cannot delete — has employees\"" : "")>
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<style>
+    .dept-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: #fff;
+        font-weight: 700;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        letter-spacing: 0.5px;
+    }
+    .dept-card {
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    .dept-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    }
+    .alert-toast {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 18px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 20px;
+    }
+    .alert-toast-success {
+        background: var(--success-bg);
+        color: var(--success);
+        border: 1px solid color-mix(in srgb, var(--success) 25%, transparent);
+    }
+    .alert-toast-danger {
+        background: var(--danger-bg);
+        color: var(--danger);
+        border: 1px solid color-mix(in srgb, var(--danger) 25%, transparent);
+    }
+</style>

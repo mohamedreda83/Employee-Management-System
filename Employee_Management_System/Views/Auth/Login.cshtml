@@ -1,0 +1,59 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Sign In";
+    Layout = "_AuthLayout";
+}
+
+<span class="page-eyebrow">Welcome back</span>
+<h1 class="mb-2" style="font-size:26px;">Sign in to your account</h1>
+<p class="page-subtitle mb-4">Enter your credentials to access the HR dashboard.</p>
+
+<form asp-controller="Auth" asp-action="Login" asp-route-returnUrl="@Model.ReturnUrl" method="post" novalidate>
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="app-alert app-alert-danger mb-4" style="display:var(--validation-display, none);"></div>
+
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label">Email Address <span class="required-dot">*</span></label>
+        <div class="input-icon-group">
+            <i class="bi bi-envelope"></i>
+            <input asp-for="Email" class="form-control" placeholder="you@company.com" autocomplete="username" />
+        </div>
+        <span asp-validation-for="Email" class="invalid-feedback d-block"></span>
+    </div>
+
+    <div class="mb-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <label asp-for="Password" class="form-label">Password <span class="required-dot">*</span></label>
+            <a asp-controller="Auth" asp-action="ForgotPassword" style="font-size:12px; font-weight:600;">Forgot password?</a>
+        </div>
+        <div class="input-icon-group">
+            <i class="bi bi-lock"></i>
+            <input asp-for="Password" type="password" class="form-control" placeholder="••••••••" id="loginPassword" autocomplete="current-password" />
+            <button type="button" class="toggle-password" data-target="loginPassword" aria-label="Toggle password visibility">
+                <i class="bi bi-eye"></i>
+            </button>
+        </div>
+        <span asp-validation-for="Password" class="invalid-feedback d-block"></span>
+    </div>
+
+    <div class="form-check mb-4">
+        <input asp-for="RememberMe" class="form-check-input" />
+        <label asp-for="RememberMe" class="form-check-label"></label>
+    </div>
+
+    <input type="hidden" asp-for="ReturnUrl" />
+
+    <button type="submit" class="btn btn-primary btn-lg btn-lift w-100">
+        <i class="bi bi-box-arrow-in-right"></i> Sign In
+    </button>
+
+    <div class="divider-or">or</div>
+
+    <p class="text-center" style="font-size:13px; color:var(--text-secondary);">
+        Having trouble accessing your account? <a href="#" style="font-weight:600;">Contact IT Support</a>
+    </p>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
