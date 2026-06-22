@@ -5,6 +5,7 @@
 }
 
 <input type="hidden" asp-for="Id" />
+<input type="hidden" asp-for="ProfilePhoto" />
 
 <div class="row g-4">
     <!-- Left column: avatar + status -->
@@ -23,11 +24,11 @@
                     }
                 </div>
                 <div class="input-icon-group w-100">
-                    <i class="bi bi-link-45deg"></i>
-                    <input asp-for="ProfilePhoto" class="form-control" placeholder="Photo URL (https://...)" />
+                    <i class="bi bi-image"></i>
+                    <input asp-for="ProfilePhotoFile" type="file" accept="image/*" class="form-control" />
                 </div>
-                <span asp-validation-for="ProfilePhoto" class="invalid-feedback d-block"></span>
-                <p class="form-text mb-0">Paste a direct image URL. File upload can be wired to your storage provider.</p>
+                <span asp-validation-for="ProfilePhotoFile" class="invalid-feedback d-block"></span>
+                <p class="form-text mb-0">Choose a photo file to upload. The image will be stored on the server.</p>
             </div>
 
             <hr class="my-4" style="border-color:var(--border-subtle);" />

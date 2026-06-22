@@ -1,0 +1,137 @@
+/* ==========================================================================
+   DESIGN TOKENS — Employee Management System
+   Premium Enterprise SaaS, light corporate theme
+   ========================================================================== */
+
+:root {
+  /* === Brand palette (as specified) === */
+  --primary: #1F3864;
+  --primary-rgb: 31, 56, 100;
+  --primary-light: #2a4a80;
+  --primary-dark: #142544;
+
+  --secondary: #2E75B6;
+  --secondary-rgb: 46, 117, 182;
+  --secondary-light: #4a8fd1;
+
+  --success: #2E7D32;
+  --success-rgb: 46, 125, 50;
+  --success-bg: #e7f4e8;
+
+  --warning: #ED6C02;
+  --warning-rgb: 237, 108, 2;
+  --warning-bg: #fef0e3;
+
+  --danger: #C62828;
+  --danger-rgb: 198, 40, 40;
+  --danger-bg: #fbe9e9;
+
+  --info: var(--secondary);
+  --info-bg: #e8f1fa;
+
+  /* === Surfaces === */
+  --bg-base: #F4F6F9;
+  --bg-elevated: #FFFFFF;
+  --bg-glass: rgba(255, 255, 255, 0.72);
+  --bg-glass-strong: rgba(255, 255, 255, 0.92);
+  --border-glass: rgba(31, 56, 100, 0.08);
+  --border-glass-strong: rgba(31, 56, 100, 0.14);
+  --border-subtle: #E6EAF1;
+
+  /* === Text === */
+  --text-primary: #16233F;
+  --text-secondary: #5B6B85;
+  --text-tertiary: #93A0B5;
+  --text-on-primary: #FFFFFF;
+
+  /* === Accent gradient (for hero/brand panels only) === */
+  --accent-gradient: linear-gradient(135deg, #1F3864 0%, #2E75B6 55%, #5AA3E0 100%);
+  --accent-gradient-soft: linear-gradient(135deg, rgba(31,56,100,0.08) 0%, rgba(46,117,182,0.08) 100%);
+  --accent-glow: 0 0 40px rgba(46, 117, 182, 0.25);
+
+  /* === Elevation === */
+  --shadow-xs: 0 1px 2px rgba(16, 30, 54, 0.04);
+  --shadow-sm: 0 2px 8px rgba(16, 30, 54, 0.06);
+  --shadow-md: 0 8px 24px rgba(16, 30, 54, 0.08), 0 1px 2px rgba(16, 30, 54, 0.04);
+  --shadow-lg: 0 24px 48px rgba(16, 30, 54, 0.12), 0 4px 12px rgba(16, 30, 54, 0.06);
+  --shadow-glow-primary: 0 12px 32px rgba(31, 56, 100, 0.18);
+  --shadow-glow-secondary: 0 12px 32px rgba(46, 117, 182, 0.22);
+
+  /* === Radius scale === */
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+  --r-pill: 999px;
+
+  /* === Spacing scale (8px base) === */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 16px; --sp-4: 24px;
+  --sp-5: 32px; --sp-6: 48px; --sp-7: 64px;
+
+  /* === Typography === */
+  --font-display: "Lexend", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+
+  /* === Motion === */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-smooth: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 0.18s;
+  --dur-base: 0.32s;
+  --dur-slow: 0.6s;
+
+  --blur-glass: 18px;
+
+  /* === Layout === */
+  --sidebar-w: 264px;
+  --sidebar-w-collapsed: 84px;
+  --topbar-h: 72px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+}
+
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6,
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+a { color: var(--secondary); text-decoration: none; }
+a:hover { color: var(--primary); }
+
+::selection { background: rgba(46, 117, 182, 0.22); }
+
+/* Ambient ::-webkit-scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(31, 56, 100, 0.18);
+  border-radius: var(--r-pill);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(31, 56, 100, 0.32); background-clip: content-box; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

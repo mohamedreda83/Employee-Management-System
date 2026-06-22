@@ -19,7 +19,7 @@
     </div>
 </div>
 
-<form asp-controller="Employee" asp-action="Edit" method="post" novalidate data-stagger-item>
+<form asp-controller="Employee" asp-action="Edit" method="post" enctype="multipart/form-data" novalidate data-stagger-item>
     @Html.AntiForgeryToken()
     <div asp-validation-summary="ModelOnly" class="app-alert app-alert-danger mb-4" style="display:var(--validation-display, none);"></div>
 

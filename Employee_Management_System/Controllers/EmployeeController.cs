@@ -1,9 +1,11 @@
 using Employee_Management_System.Data;
 using Employee_Management_System.Models;
 using Employee_Management_System.ViewModels.Employee;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
 
 namespace Employee_Management_System.Controllers
 {
@@ -15,6 +17,32 @@ namespace Employee_Management_System.Controllers
         public EmployeeController(ApplicationDbContext context)
         {
             _context = context;
+        }
+
+        private async Task<string?> SaveProfilePhotoAsync(IFormFile? photoFile)
+        {
+            if (photoFile == null || photoFile.Length == 0)
+            {
+                return null;
+            }
+
+            var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "employees");
+            Directory.CreateDirectory(uploadsRoot);
+
+            var originalFileName = Path.GetFileName(photoFile.FileName);
+            var extension = Path.GetExtension(originalFileName);
+            if (string.IsNullOrEmpty(extension))
+            {
+                extension = ".jpg";
+            }
+
+            var fileName = $"employee_{Guid.NewGuid()}{extension}";
+            var filePath = Path.Combine(uploadsRoot, fileName);
+
+            await using var stream = new FileStream(filePath, FileMode.Create);
+            await photoFile.CopyToAsync(stream);
+
+            return $"/uploads/employees/{fileName}";
         }
 
         public async Task<IActionResult> Index(string? search, int? departmentId, int? positionId, string? status)
@@ -98,11 +126,13 @@ namespace Employee_Management_System.Controllers
                 return View(model);
             }
 
+            var savedPhotoUrl = await SaveProfilePhotoAsync(model.ProfilePhotoFile) ?? model.ProfilePhoto;
+
             var employee = new Employee
             {
                 EmployeeNumber = model.EmployeeNumber,
                 FullName = model.FullName,
-                ProfilePhoto = model.ProfilePhoto,
+                ProfilePhoto = savedPhotoUrl,
                 Gender = model.Gender,
                 DateOfBirth = model.DateOfBirth,
                 NationalId = model.NationalId,
@@ -175,9 +205,14 @@ namespace Employee_Management_System.Controllers
                 return NotFound();
             }
 
+            var savedPhotoUrl = await SaveProfilePhotoAsync(model.ProfilePhotoFile);
+            if (!string.IsNullOrEmpty(savedPhotoUrl))
+            {
+                employee.ProfilePhoto = savedPhotoUrl;
+            }
+
             employee.EmployeeNumber = model.EmployeeNumber;
             employee.FullName = model.FullName;
-            employee.ProfilePhoto = model.ProfilePhoto;
             employee.Gender = model.Gender;
             employee.DateOfBirth = model.DateOfBirth;
             employee.NationalId = model.NationalId;

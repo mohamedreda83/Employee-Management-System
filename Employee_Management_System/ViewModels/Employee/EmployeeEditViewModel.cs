@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace Employee_Management_System.ViewModels.Employee
 {
@@ -13,6 +14,7 @@ namespace Employee_Management_System.ViewModels.Employee
         public string FullName { get; set; } = null!;
 
         public string? ProfilePhoto { get; set; }
+        public IFormFile? ProfilePhotoFile { get; set; }
         public string? Gender { get; set; }
         public DateOnly? DateOfBirth { get; set; }
         public string? NationalId { get; set; }
