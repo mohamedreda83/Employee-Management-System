@@ -189,9 +189,27 @@
 .sidebar-brand {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: var(--sp-3);
     padding: var(--sp-4) var(--sp-4) var(--sp-3);
     flex-shrink: 0;
+}
+
+.sidebar-close-btn {
+    border: none;
+    background: transparent;
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    cursor: pointer;
+}
+
+.sidebar-close-btn i {
+    font-size: 1.25rem;
 }
 
 .sidebar-brand-mark {
